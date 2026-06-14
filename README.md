@@ -26,7 +26,7 @@
     <img src="https://img.shields.io/badge/Pytest-69%20passing-f4f3ee?style=flat-square&labelColor=0a0a0b&logo=pytest&logoColor=ffffff" alt="Pytest Count" />
   </a>
   <a href="https://github.com/Stormynubee/Faraway2026Japan/blob/main/src/lib/">
-    <img src="https://img.shields.io/badge/Vitest-125%20passing-f4f3ee?style=flat-square&labelColor=0a0a0b&logo=vitest&logoColor=ffffff" alt="Vitest Count" />
+    <img src="https://img.shields.io/badge/Vitest-127%20passing-f4f3ee?style=flat-square&labelColor=0a0a0b&logo=vitest&logoColor=ffffff" alt="Vitest Count" />
   </a>
   <a href="https://github.com/Stormynubee/Faraway2026Japan/releases">
     <img src="https://img.shields.io/github/v/release/Stormynubee/Faraway2026Japan?label=Release&style=flat-square&color=f4f3ee&labelColor=0a0a0b&logo=github&logoColor=ffffff" alt="Latest Release" />
