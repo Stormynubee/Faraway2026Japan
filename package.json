@@ -1,7 +1,7 @@
 {
   "name": "@stormynubee/railtwin-x-dashboard",
   "version": "1.0.0",
-  "description": "Vite-React dashboard UI for RailTwin-X Lite track-bed monitoring system",
+  "description": "Bogie Flow — climate-aware track-bed monitoring dashboard (Vite + React + Three.js)",
   "type": "module",
   "main": "./dist/index.html",
   "files": [
@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "three": "^0.160.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",

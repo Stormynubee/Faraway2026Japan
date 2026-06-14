@@ -10,5 +10,5 @@ node_modules/
 dist/
 .cursor/
 .research/
-assets/fallback_demo_log.txt
+temp/
 .DS_Store
