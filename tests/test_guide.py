@@ -1,4 +1,14 @@
+import pytest
+
+from server.auth import reset_guide_rate_limits
 from server.guide import _gemini_contents, _split_technical, DEFAULT_GEMINI_MODEL, _call_gemini
+
+
+@pytest.fixture(autouse=True)
+def _clear_guide_rate_limits():
+    reset_guide_rate_limits()
+    yield
+    reset_guide_rate_limits()
 
 
 def test_split_technical():
@@ -49,3 +59,62 @@ def test_call_gemini_sends_api_key_in_header_not_query(monkeypatch):
 
     assert "key=" not in captured["url"]
     assert captured["api_key_header"] == "test-secret-key"
+
+
+def test_guide_chat_http_returns_fallback_without_api_key(client, monkeypatch):
+    monkeypatch.delenv("BOGIE_API_SECRET", raising=False)
+    monkeypatch.delenv("GUIDE_AI_API_KEY", raising=False)
+
+    response = client.post(
+        "/api/guide/chat",
+        json={"message": "What is corridor scrub?", "history": []},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["source"] == "fallback"
+    assert isinstance(data["answer"], str) and data["answer"]
+    assert isinstance(data["technical"], str) and data["technical"]
+
+
+def test_guide_chat_http_accepts_valid_history(client, monkeypatch):
+    monkeypatch.delenv("BOGIE_API_SECRET", raising=False)
+    monkeypatch.delenv("GUIDE_AI_API_KEY", raising=False)
+    monkeypatch.setattr(
+        "server.main.ai_guide_answer",
+        lambda message, history=None: {
+            "answer": f"Echo: {message}",
+            "technical": "test",
+            "source": "ai",
+            "model": "gemini-test",
+        },
+    )
+
+    response = client.post(
+        "/api/guide/chat",
+        json={
+            "message": "Next?",
+            "history": [
+                {"role": "user", "content": "Hi"},
+                {"role": "assistant", "content": "Hello"},
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["answer"] == "Echo: Next?"
+    assert data["source"] == "ai"
+    assert data["model"] == "gemini-test"
+
+
+def test_guide_chat_http_rejects_empty_message(client, monkeypatch):
+    monkeypatch.delenv("BOGIE_API_SECRET", raising=False)
+    monkeypatch.delenv("GUIDE_AI_API_KEY", raising=False)
+
+    response = client.post(
+        "/api/guide/chat",
+        json={"message": "", "history": []},
+    )
+
+    assert response.status_code == 422

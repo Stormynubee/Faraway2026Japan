@@ -97,7 +97,6 @@ export default function OverviewView({
                   localInjectAnomaly={localInjectAnomaly}
                 />
                 <ScenarioMenu
-                  connected={connected}
                   realConnected={realConnected}
                   onInjectToast={onInjectToast}
                   localInjectMonsoon={localInjectMonsoon}

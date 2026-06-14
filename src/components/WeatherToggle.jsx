@@ -4,7 +4,6 @@ import { setWeatherMode } from '../lib/api.js'
 export default function WeatherToggle({
   liveWeather,
   weatherNote,
-  connected,
   realConnected,
   localSetWeatherMode,
 }) {

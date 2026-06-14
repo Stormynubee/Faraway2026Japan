@@ -238,7 +238,6 @@ export default function App() {
                   segments={segments}
                   dataReady={dataReady}
                   weatherStatus={weatherStatus}
-                  connected={connected}
                   realConnected={realConnected}
                   localSetWeatherMode={localSetWeatherMode}
                 />

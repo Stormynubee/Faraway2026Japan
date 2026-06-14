@@ -55,4 +55,26 @@ describe('tickDemoForecast', () => {
     expect(next.segments[0].projected_risk).toBe(0.88)
     expect(next.segments[0].sparkline.at(-1)).toBe(0.88)
   })
+
+  it('uses freshly ticked segment risk in the same demo tick', () => {
+    const segments = [
+      {
+        id: 'S4',
+        rainfall: 0.15,
+        soil_moisture: 0.28,
+        vib_z: 0.08,
+        risk_index: 0.15,
+        k_effective: 95.5,
+        state: 'HEALTHY',
+        color: '#22c55e',
+      },
+    ]
+    const ticked = tickDemoSegments(segments, () => 0.99)
+    const forecast = {
+      segments: [{ id: 'S4', projected_risk: 0.15, sparkline: [0.15, 0.15] }],
+    }
+    const riskById = Object.fromEntries(ticked.map((s) => [s.id, s.risk_index]))
+    const next = tickDemoForecast(forecast, riskById)
+    expect(next.segments[0].projected_risk).toBe(ticked[0].risk_index)
+  })
 })

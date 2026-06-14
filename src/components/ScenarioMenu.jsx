@@ -10,7 +10,6 @@ const SCENARIO_MENU = [
 ]
 
 export default function ScenarioMenu({
-  connected,
   realConnected,
   onInjectToast,
   localInjectMonsoon,

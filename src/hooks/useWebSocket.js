@@ -276,10 +276,11 @@ export function useWebSocket() {
     const interval = setInterval(() => {
       setTrain((prev) => advanceTrainProgress(prev))
 
+      let tickSegments = null
       setSegments((prev) => {
-        const next = tickDemoSegments(prev)
-        setActiveRiskIndex(computeActiveRiskFromSegments(next))
-        return next
+        tickSegments = tickDemoSegments(prev)
+        setActiveRiskIndex(computeActiveRiskFromSegments(tickSegments))
+        return tickSegments
       })
 
       setSegmentHistory((prevHistory) => tickDemoHistory(prevHistory, SEGMENT_IDS))
@@ -287,8 +288,9 @@ export function useWebSocket() {
       setImpact((prev) => tickDemoImpact(prev))
 
       setForecast((prev) => {
+        const segmentsForForecast = tickSegments ?? segmentsRef.current
         const riskById = Object.fromEntries(
-          segmentsRef.current.map((s) => [s.id, s.risk_index]),
+          segmentsForForecast.map((s) => [s.id, s.risk_index]),
         )
         return tickDemoForecast(prev, riskById)
       })

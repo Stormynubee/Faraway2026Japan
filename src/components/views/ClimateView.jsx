@@ -14,7 +14,6 @@ export default function ClimateView({
   segments,
   dataReady,
   weatherStatus,
-  connected,
   realConnected,
   localSetWeatherMode,
 }) {
@@ -62,7 +61,6 @@ export default function ClimateView({
         <WeatherToggle
           liveWeather={weatherStatus?.live_weather}
           weatherNote={weatherStatus?.note}
-          connected={connected}
           realConnected={realConnected}
           localSetWeatherMode={localSetWeatherMode}
         />
