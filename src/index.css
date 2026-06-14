@@ -3416,16 +3416,16 @@ body {
 .panel-hero-gauge {
   border-radius: var(--panel-radius);
   box-shadow: var(--shadow-panel);
-  align-self: stretch;
-  height: fit-content;
+  align-self: start;
+  height: auto;
 }
 
 .hero-gauge-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 16px 24px;
-  padding: 16px 20px 18px;
+  gap: 12px 20px;
+  padding: 12px 18px 14px;
 }
 
 .hero-gauge-row .metric-bar {

@@ -20,21 +20,26 @@ describe('overviewSplitLayout contract', () => {
     expect(OVERVIEW_SPLIT_CLASSES.page).toBe('overview-page-split')
     expect(OVERVIEW_SPLIT_CLASSES.corridorPlacement).toBe('split')
     expect(OVERVIEW_SPLIT_CLASSES.corridorOpsRow).toBe('overview-ops-row')
+    expect(OVERVIEW_SPLIT_CLASSES.corridorSensors).toBe('overview-corridor-sensors')
+    expect(OVERVIEW_SPLIT_CLASSES.deck).toBe('overview-deck')
     expect(OVERVIEW_SPLIT_CLASSES.deckRight).toBe('overview-deck-right')
+    expect(OVERVIEW_SPLIT_CLASSES.metricsAlerts).toBe('overview-metrics-alerts')
   })
 
-  it('orders header and workspace before alerts in scroll shell', () => {
+  it('orders header and workspace before secondary in scroll shell', () => {
     const headerIdx = OVERVIEW_SPLIT_REGION_ORDER.indexOf('header')
     const workspaceIdx = OVERVIEW_SPLIT_REGION_ORDER.indexOf('workspace')
-    const alertsIdx = OVERVIEW_SPLIT_REGION_ORDER.indexOf('alerts')
+    const secondaryIdx = OVERVIEW_SPLIT_REGION_ORDER.indexOf('secondary')
     expect(headerIdx).toBeGreaterThanOrEqual(0)
     expect(workspaceIdx).toBeGreaterThan(headerIdx)
-    expect(alertsIdx).toBeGreaterThan(workspaceIdx)
+    expect(secondaryIdx).toBeGreaterThan(workspaceIdx)
+    expect(OVERVIEW_SPLIT_REGION_ORDER).not.toContain('alerts')
   })
 
-  it('expects climate before risk gauge in metrics column', () => {
+  it('expects climate, risk deck, then alerts in metrics column', () => {
     expect(OVERVIEW_METRICS_ORDER[0]).toBe('climate')
     expect(OVERVIEW_METRICS_ORDER[1]).toBe('riskImpactDeck')
+    expect(OVERVIEW_METRICS_ORDER[2]).toBe('alerts')
   })
 
   it('OverviewView implements split layout structure', () => {
@@ -50,9 +55,10 @@ describe('overviewSplitLayout contract', () => {
 
     const headerIdx = src.indexOf('overview-page-header')
     const workspaceIdx = src.indexOf('LAYOUT.workspace')
-    const alertsIdx = src.indexOf('LAYOUT.alertsStage')
+    const secondaryIdx = src.indexOf('LAYOUT.secondary')
     expect(headerIdx).toBeLessThan(workspaceIdx)
-    expect(workspaceIdx).toBeLessThan(alertsIdx)
+    expect(workspaceIdx).toBeLessThan(secondaryIdx)
+    expect(src).toContain('LAYOUT.metricsAlerts')
 
     const corridorIdx = src.indexOf('LAYOUT.corridorPane')
     const metricsIdx = src.indexOf('LAYOUT.metricsPane')
@@ -62,11 +68,16 @@ describe('overviewSplitLayout contract', () => {
   it('places climate above risk gauge and ops row under corridor', () => {
     const src = readFileSync(overviewPath, 'utf8')
     const metricsStart = src.indexOf('LAYOUT.metricsPane')
-    const metricsBlock = src.slice(metricsStart, src.indexOf('LAYOUT.alertsStage'))
+    const metricsEnd = src.indexOf('LAYOUT.secondary')
+    const metricsBlock = src.slice(metricsStart, metricsEnd)
     const climateIdx = metricsBlock.indexOf('<ClimatePanel')
     const gaugeIdx = metricsBlock.indexOf('data-testid="risk-gauge"')
+    const impactIdx = metricsBlock.indexOf('<ImpactPanel')
+    const alertsIdx = metricsBlock.indexOf('overview-alerts')
     expect(climateIdx).toBeGreaterThanOrEqual(0)
     expect(gaugeIdx).toBeGreaterThan(climateIdx)
+    expect(impactIdx).toBeGreaterThan(gaugeIdx)
+    expect(alertsIdx).toBeGreaterThan(impactIdx)
 
     const corridorStart = src.indexOf('LAYOUT.corridorPane')
     const corridorBlock = src.slice(corridorStart, metricsStart)
@@ -75,6 +86,12 @@ describe('overviewSplitLayout contract', () => {
     expect(corridorBlock).toContain('<ScenarioMenu')
     expect(metricsBlock).not.toContain('<OverviewOpsStrip')
     expect(metricsBlock).not.toContain('<ScenarioMenu')
+  })
+
+  it('overview-split.css prevents workspace column stretch void', () => {
+    const css = readFileSync(splitCssPath, 'utf8')
+    expect(css).toMatch(/\.overview-workspace\s*\{[^}]*align-items:\s*start/)
+    expect(css).toMatch(/\.overview-metrics-pane[\s\S]*\.overview-metrics-alerts/)
   })
 
   it('overview-split.css locks main-grid scroll to inner pane', () => {
@@ -113,18 +130,22 @@ describe('overviewSplitLayout contract', () => {
     expect(splitIdx).toBeGreaterThan(indexIdx)
   })
 
-  it('OverviewView places field sensors in deck right, not inside risk gauge', () => {
+  it('OverviewView places field sensors below ops row in corridor pane', () => {
     const src = readFileSync(overviewPath, 'utf8')
     const sensorSrc = readFileSync(sensorPanelPath, 'utf8')
     expect(sensorSrc).toContain('data-testid="field-sensors-panel"')
-    expect(src).toContain('LAYOUT.deckRight')
+    expect(src).toContain('LAYOUT.corridorSensors')
     expect(src).toContain('<SensorStackPanel')
     expect(src).toContain('variant="deck"')
 
     const corridorStart = src.indexOf('LAYOUT.corridorPane')
     const metricsStart = src.indexOf('LAYOUT.metricsPane')
     const corridorBlock = src.slice(corridorStart, metricsStart)
-    expect(corridorBlock).not.toContain('<SensorStackPanel')
+    expect(corridorBlock).toContain('<SensorStackPanel')
+    expect(corridorBlock).toContain('LAYOUT.corridorOpsRow')
+    expect(corridorBlock).toMatch(
+      /LAYOUT\.corridorOpsRow[\s\S]*<SensorStackPanel/,
+    )
 
     const gaugeIdx = src.indexOf('data-testid="risk-gauge"')
     const gaugeBlock = src.slice(gaugeIdx, gaugeIdx + 600)

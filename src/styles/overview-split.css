@@ -39,7 +39,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--gutter);
-  min-height: 100%;
+  min-height: auto;
   padding: var(--gutter);
   padding-bottom: calc(var(--gutter) * 2);
 }
@@ -56,12 +56,12 @@
   padding-bottom: 0;
 }
 
-/* Two-column workspace */
+/* Two-column workspace — columns size to content, no stretch void */
 .overview-workspace {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--gutter);
-  align-items: stretch;
+  align-items: start;
   min-width: 0;
 }
 
@@ -76,6 +76,23 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  align-content: start;
+  align-self: start;
+}
+
+.overview-corridor-sensors {
+  flex-shrink: 0;
+  align-self: stretch;
+  min-width: 0;
+}
+
+.overview-corridor-sensors.sensor-stack-deck .panel-head-calm {
+  padding: 12px 14px 0;
+}
+
+.overview-corridor-sensors .sensor-stack-grid-deck {
+  padding: 10px 14px 14px;
+  gap: 8px;
 }
 
 .overview-corridor-pane .corridor-command-dock.corridor-feed-split {
@@ -90,14 +107,67 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  align-content: start;
+  align-self: start;
+}
+
+.overview-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.overview-deck-right {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+  min-width: 0;
+}
+
+.overview-deck .panel-hero-gauge,
+.overview-deck .impact-panel {
+  align-self: stretch;
+  width: 100%;
+  height: auto;
+}
+
+/* Live alerts — stacked tight under gauge + impact in metrics column */
+.overview-metrics-alerts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  flex-shrink: 0;
+}
+
+.overview-metrics-alerts .anomaly-stream {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  background: var(--ink-850);
+  background-image: var(--grid-blueprint);
+  background-size: var(--grid-blueprint-size);
+}
+
+.overview-metrics-alerts .panel-head-calm {
+  border-bottom: 1px solid var(--line-strong);
+  padding: 12px 16px;
+}
+
+.overview-metrics-alerts .stream-list {
+  min-height: 160px;
+  max-height: min(32vh, 320px);
+  overflow-y: auto;
+  padding: 8px 12px 12px;
 }
 
 .overview-ops-row {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
-  flex: 1;
   min-width: 0;
   align-content: start;
   position: relative;
@@ -116,54 +186,7 @@
   min-width: 0;
 }
 
-.overview-deck {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  align-items: stretch;
-  min-width: 0;
-}
-
-.overview-deck-right {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-  min-height: 0;
-}
-
-@media (min-width: 1100px) {
-  .overview-metrics-pane .overview-deck {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    align-items: stretch;
-  }
-
-  .overview-deck-right {
-    min-height: 100%;
-  }
-
-  .overview-deck-right .sensor-stack-deck {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
-
-  .overview-deck-right .sensor-stack-grid-deck {
-    flex: 1;
-    align-content: start;
-  }
-
-  .overview-deck .panel-hero-gauge {
-    min-height: 100%;
-  }
-}
-
-.overview-deck .panel-hero-gauge {
-  align-self: start;
-}
-
-/* Alerts full width below split */
+/* Legacy full-width alerts stage (other views) */
 .overview-alerts-stage {
   min-height: min(48vh, 520px);
   display: flex;

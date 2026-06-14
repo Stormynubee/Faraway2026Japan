@@ -105,11 +105,18 @@ export default function OverviewView({
                   localReset={localReset}
                 />
               </div>
+              <SensorStackPanel
+                segments={segments}
+                activeRiskIndex={activeRiskIndex}
+                connected={realConnected}
+                variant="deck"
+                className={LAYOUT.corridorSensors}
+              />
             </aside>
 
             <div className={LAYOUT.metricsPane}>
               <ClimatePanel segments={segments} segmentHistory={segmentHistory} />
-              <div className="overview-deck">
+              <div className={LAYOUT.deck}>
                 <section
                   className="panel panel-hero-gauge panel-stagger-2"
                   data-testid="risk-gauge"
@@ -130,22 +137,16 @@ export default function OverviewView({
                     />
                   </div>
                 </section>
-                <div className={LAYOUT.deckRight}>
-                  <ImpactPanel impact={impact} />
-                  <SensorStackPanel
-                    segments={segments}
-                    activeRiskIndex={activeRiskIndex}
-                    connected={realConnected}
-                    variant="deck"
-                  />
-                </div>
+                <ImpactPanel impact={impact} />
               </div>
+              <section
+                className={`${LAYOUT.metricsAlerts} panel-stagger-3`}
+                data-testid="overview-alerts"
+              >
+                <AnomalyStream tickets={tickets} logs={logs} maxEntries={14} />
+              </section>
             </div>
           </div>
-
-          <section className={`${LAYOUT.alertsStage} panel-stagger-3`} data-testid="overview-alerts">
-            <AnomalyStream tickets={tickets} logs={logs} maxEntries={14} />
-          </section>
 
           <div className={LAYOUT.secondary}>
             <ForecastPanel forecast={forecast} />
