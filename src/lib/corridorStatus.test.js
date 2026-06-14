@@ -7,6 +7,8 @@ describe('corridorStatusSummary', () => {
       line: 'Connecting to corridor telemetry…',
       tone: 'loading',
       attentionCount: 0,
+      attentionSegments: [],
+      totalSegments: 0,
     })
   })
 
@@ -29,6 +31,8 @@ describe('corridorStatusSummary', () => {
     expect(summary.line).toBe('Corridor status: 2 segments need attention')
     expect(summary.attentionCount).toBe(2)
     expect(summary.tone).toBe('warn')
+    expect(summary.attentionSegments.map((s) => s.id)).toEqual(['S4', 'S5'])
+    expect(summary.totalSegments).toBe(3)
   })
 })
 

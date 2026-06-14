@@ -13,8 +13,8 @@ Record with backend + frontend running (`npm run dev:all`) or a deployed single-
 | # | Action | UI target |
 |---|--------|-----------|
 | 1 | Wait for boot loader to finish | Full-screen boot → dashboard |
-| 2 | Point at hero line | `data-testid="hero-status-line"` — corridor status |
-| 3 | Point at risk gauge | `data-testid="risk-gauge-dial"` — low needle, green segments |
+| 2 | Point at status bar | `hero-status-line` — chips for segments needing attention (click to analyze) |
+| 3 | Point at corridor feed | Scroll page to scrub frames · Shift+wheel on image · drag rail |
 | 4 | Scroll the corridor scrub | Page scroll or Shift+wheel on corridor image — `CorridorCommandDock` |
 
 **On screen:** All segments green/nominal, train moving S1→S6, Impact panel showing baseline estimates.
@@ -71,7 +71,7 @@ Record with backend + frontend running (`npm run dev:all`) or a deployed single-
 
 | # | Action | UI target |
 |---|--------|-----------|
-| 22 | Optional: open guide FAB | `data-testid="guide-fab"` — ask "Why was S4 flagged P1?" |
+| 22 | Optional: open guide FAB | `guide-fab` → `guide-launcher-chat` (default chat) — ask "Why was S4 flagged P1?" Or `guide-launcher-tour` for page walkthrough |
 | 23 | End card | GitHub repo + live deploy URL |
 
 ---

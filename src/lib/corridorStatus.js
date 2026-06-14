@@ -1,12 +1,20 @@
 /** Segments that warrant operator attention (warning or critical). */
+export function segmentNeedsAttention(seg) {
+  return (
+    seg?.state === 'CRITICAL_MUD_PUMPING' ||
+    seg?.state === 'WARNING_WATERLOGGING' ||
+    (seg?.risk_index ?? 0) >= 0.35
+  )
+}
+
 export function countAttentionSegments(segments) {
   if (!segments?.length) return 0
-  return segments.filter(
-    (s) =>
-      s.state === 'CRITICAL_MUD_PUMPING' ||
-      s.state === 'WARNING_WATERLOGGING' ||
-      (s.risk_index ?? 0) >= 0.35,
-  ).length
+  return segments.filter(segmentNeedsAttention).length
+}
+
+export function listAttentionSegments(segments) {
+  if (!segments?.length) return []
+  return segments.filter(segmentNeedsAttention)
 }
 
 /**
@@ -18,15 +26,20 @@ export function corridorStatusSummary(segments) {
       line: 'Connecting to corridor telemetry…',
       tone: 'loading',
       attentionCount: 0,
+      attentionSegments: [],
+      totalSegments: 0,
     }
   }
 
   const attentionCount = countAttentionSegments(segments)
+  const attentionSegments = listAttentionSegments(segments)
   if (attentionCount === 0) {
     return {
       line: 'Corridor status: All segments nominal',
       tone: 'healthy',
       attentionCount: 0,
+      attentionSegments: [],
+      totalSegments: segments.length,
     }
   }
 
@@ -35,6 +48,8 @@ export function corridorStatusSummary(segments) {
     line: `Corridor status: ${attentionCount} ${noun} need attention`,
     tone: 'warn',
     attentionCount,
+    attentionSegments,
+    totalSegments: segments.length,
   }
 }
 

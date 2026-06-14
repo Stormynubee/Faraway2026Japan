@@ -44,32 +44,38 @@ export default function OverviewView({
 
   return (
     <div className="overview-page" ref={overviewShellRef} data-testid="view-overview">
-      <HeroStatusLine segments={segments} />
+      <HeroStatusLine segments={segments} onSegmentClick={onSegmentClick} />
 
-      <section className="panel panel-hero-gauge panel-stagger-1" data-testid="risk-gauge">
-        <PanelHeader
-          icon="speed"
-          title="Corridor risk gauge"
-          explainer="Highest active track-bed risk across segments S1–S6"
-        />
-        <div className="hero-gauge-row">
-          <RiskGaugeDial activeRiskIndex={activeRiskIndex} />
-          <MetricBar
-            segments={segments}
-            activeRiskIndex={activeRiskIndex}
-            variant="strip"
-            animate
-          />
-        </div>
-      </section>
+      <CorridorCommandDock
+        placement="hero"
+        segments={segments}
+        onSegmentClick={onSegmentClick}
+        driveShellRef={overviewShellRef}
+        lastTickAt={lastTickAt}
+        className="panel-stagger-1"
+      />
 
       <div className="overview-grid">
-        <CorridorCommandDock
-          segments={segments}
-          onSegmentClick={onSegmentClick}
-          driveShellRef={overviewShellRef}
-          lastTickAt={lastTickAt}
-        />
+        <section
+          className="panel panel-hero-gauge panel-stagger-2"
+          data-testid="risk-gauge"
+          data-guide="metrics"
+        >
+          <PanelHeader
+            icon="speed"
+            title="Corridor risk gauge"
+            explainer="Highest active track-bed risk across segments S1–S6"
+          />
+          <div className="hero-gauge-row">
+            <RiskGaugeDial activeRiskIndex={activeRiskIndex} />
+            <MetricBar
+              segments={segments}
+              activeRiskIndex={activeRiskIndex}
+              variant="strip"
+              animate
+            />
+          </div>
+        </section>
 
         <div className="overview-side-stack">
           <ImpactPanel impact={impact} />

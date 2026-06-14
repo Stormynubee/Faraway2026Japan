@@ -17,6 +17,8 @@ export default function CorridorCommandDock({
   onSegmentClick,
   driveShellRef,
   lastTickAt,
+  placement = 'grid',
+  className = '',
 }) {
   const viewportRef = useRef(null)
   const dockRef = useRef(null)
@@ -72,7 +74,7 @@ export default function CorridorCommandDock({
   return (
     <motion.section
       ref={dockRef}
-      className="panel corridor-command-dock panel-stagger-2"
+      className={`panel corridor-command-dock ${placement === 'hero' ? 'corridor-feed-hero' : ''} ${className}`.trim()}
       data-guide="corridor-feed"
       {...dockMotion}
     >

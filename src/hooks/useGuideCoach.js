@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { GUIDE_STEPS } from '../data/guideSteps.js'
 import { resolveGuideMessage } from '../lib/guideChat.js'
+import { GUIDE_PANEL_MODES, nextGuideUiState } from '../lib/guideLauncher.js'
 import { UI } from '../content/uiCopy.js'
 
 const STORAGE_KEY = 'bogie-guide-tour-done'
@@ -10,6 +11,8 @@ const STORAGE_KEY = 'bogie-guide-tour-done'
  */
 export function useGuideCoach({ view, setView, onOpenStationMap }) {
   const [open, setOpen] = useState(false)
+  const [launcherOpen, setLauncherOpen] = useState(false)
+  const [panelMode, setPanelMode] = useState(null)
   const [tourActive, setTourActive] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
   const [messages, setMessages] = useState([])
@@ -19,6 +22,16 @@ export function useGuideCoach({ view, setView, onOpenStationMap }) {
   const lastAnnouncedStepRef = useRef(null)
 
   const currentStep = tourActive ? GUIDE_STEPS[stepIndex] : null
+
+  const applyUiState = useCallback((next) => {
+    setOpen(next.open)
+    setLauncherOpen(next.launcherOpen)
+    setPanelMode(next.mode)
+    if (!next.open) {
+      setTourActive(false)
+      setSpotlightRect(null)
+    }
+  }, [])
 
   const appendMessage = useCallback((role, content, meta = {}) => {
     setMessages((prev) => [
@@ -50,13 +63,13 @@ export function useGuideCoach({ view, setView, onOpenStationMap }) {
   }, [tourActive, currentStep])
 
   useEffect(() => {
-    if (!open) return
+    if (!open || panelMode !== GUIDE_PANEL_MODES.chat) return
     if (messages.length === 0) {
       appendMessage('assistant', UI.guide.welcome, {
-        technical: 'Corridor guide · hybrid local + optional AI',
+        technical: 'Corridor guide · local answers + optional Gemini',
       })
     }
-  }, [open, messages.length, appendMessage])
+  }, [open, panelMode, messages.length, appendMessage])
 
   useEffect(() => {
     if (!tourActive || !currentStep) return
@@ -87,20 +100,41 @@ export function useGuideCoach({ view, setView, onOpenStationMap }) {
     })
   }, [stepIndex, tourActive, currentStep, appendMessage])
 
-  const openPanel = useCallback(() => setOpen(true), [])
+  const toggleFab = useCallback(() => {
+    applyUiState(
+      nextGuideUiState({ open, launcherOpen, mode: panelMode }, 'fab'),
+    )
+  }, [open, launcherOpen, panelMode, applyUiState])
+
+  const dismissLauncher = useCallback(() => {
+    applyUiState(
+      nextGuideUiState({ open, launcherOpen, mode: panelMode }, 'dismiss'),
+    )
+  }, [open, launcherOpen, panelMode, applyUiState])
+
   const closePanel = useCallback(() => {
-    setOpen(false)
+    applyUiState(
+      nextGuideUiState({ open, launcherOpen, mode: panelMode }, 'close-panel'),
+    )
+  }, [open, launcherOpen, panelMode, applyUiState])
+
+  const openChat = useCallback(() => {
+    applyUiState(
+      nextGuideUiState({ open, launcherOpen, mode: panelMode }, 'select-chat'),
+    )
     setTourActive(false)
     setSpotlightRect(null)
-  }, [])
+  }, [open, launcherOpen, panelMode, applyUiState])
 
-  const startTour = useCallback(() => {
+  const openTour = useCallback(() => {
+    applyUiState(
+      nextGuideUiState({ open, launcherOpen, mode: panelMode }, 'select-tour'),
+    )
     lastAnnouncedStepRef.current = null
     setTourActive(true)
     setStepIndex(0)
-    setOpen(true)
     setMessages([])
-  }, [])
+  }, [open, launcherOpen, panelMode, applyUiState])
 
   const endTour = useCallback((finished = false) => {
     setTourActive(false)
@@ -117,9 +151,11 @@ export function useGuideCoach({ view, setView, onOpenStationMap }) {
   const nextStep = useCallback(() => {
     if (stepIndex >= GUIDE_STEPS.length - 1) {
       endTour(true)
-      appendMessage('assistant', 'Tour complete — you can keep asking questions anytime.', {
+      appendMessage('assistant', 'Walkthrough complete — switch to chat anytime from the guide button.', {
         technical: 'GUIDE_STEPS finished',
       })
+      setPanelMode(GUIDE_PANEL_MODES.chat)
+      setTourActive(false)
       return
     }
     setStepIndex((i) => i + 1)
@@ -131,7 +167,8 @@ export function useGuideCoach({ view, setView, onOpenStationMap }) {
 
   const skipTour = useCallback(() => {
     endTour(false)
-    appendMessage('assistant', 'Tour skipped. Ask me anything about the dashboard.', {})
+    setPanelMode(GUIDE_PANEL_MODES.chat)
+    appendMessage('assistant', 'Walkthrough skipped. Ask anything about the corridor below.', {})
   }, [endTour, appendMessage])
 
   const sendMessage = useCallback(
@@ -167,8 +204,13 @@ export function useGuideCoach({ view, setView, onOpenStationMap }) {
 
   return {
     open,
-    openPanel,
+    launcherOpen,
+    panelMode,
+    toggleFab,
+    dismissLauncher,
     closePanel,
+    openChat,
+    openTour,
     tourActive,
     stepIndex,
     stepCount: GUIDE_STEPS.length,
@@ -178,7 +220,6 @@ export function useGuideCoach({ view, setView, onOpenStationMap }) {
     input,
     setInput,
     thinking,
-    startTour,
     nextStep,
     prevStep,
     skipTour,

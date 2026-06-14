@@ -37,6 +37,16 @@ export const UI = {
     live: 'Live',
     scrubRailHint: 'Scroll page · Shift+wheel · drag bar',
   },
+  status: {
+    kicker: 'Corridor status',
+    connecting: 'Connecting to corridor telemetry…',
+    allNominal: (total) =>
+      total > 0 ? `All ${total} segments nominal` : 'All segments nominal',
+    operational: (total) => `${total}/${total} operational · no active warnings`,
+    needsAttention: (count) =>
+      count === 1 ? '1 segment needs attention' : `${count} segments need attention`,
+    watchListLabel: 'Segments requiring attention',
+  },
   briefing: {
     title: 'What to do next',
     sub: 'Priority plan from live telemetry',
@@ -120,9 +130,16 @@ export const UI = {
   guide: {
     welcome:
       'Hi — I can walk you through the dashboard or answer questions about segments, scrubbing, tickets, and simulations. Try a quick topic or start the guided tour.',
-    fabLabel: 'Open guide',
+    fabLabel: 'Open corridor guide',
+    launcherKicker: 'Corridor help',
+    launcherTitle: 'How do you want help?',
+    launcherTourLabel: 'Page walkthrough',
+    launcherTourDesc: 'Step through Overview, Analysis, Maintenance, and Climate with highlights.',
+    launcherChatLabel: 'Corridor chat',
+    launcherChatDesc: 'Ask about segments, tickets, scrubbing, and demo injects.',
+    launcherDefaultTag: 'Default',
     title: 'Corridor guide',
-    subtitle: 'Ask questions or take the step-by-step tour',
+    subtitle: 'Ask questions about the dashboard',
     placeholder: 'Ask about segments, scrubbing, tickets…',
     startTour: 'Start guided tour',
     next: 'Next step',

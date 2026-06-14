@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UI } from '../../content/uiCopy.js'
+import { GUIDE_PANEL_MODES } from '../../lib/guideLauncher.js'
 
 export default function GuideChatPanel({
   open,
+  mode,
   onClose,
   messages,
   input,
@@ -14,7 +16,6 @@ export default function GuideChatPanel({
   stepIndex,
   stepCount,
   currentStep,
-  onStartTour,
   onNext,
   onBack,
   onSkip,
@@ -46,8 +47,12 @@ export default function GuideChatPanel({
         >
           <header className="guide-panel-head">
             <div>
-              <h2 className="guide-panel-title">{UI.guide.title}</h2>
-              <p className="guide-panel-sub">{UI.guide.subtitle}</p>
+              <h2 className="guide-panel-title">
+                {tourActive ? UI.guide.launcherTourLabel : UI.guide.title}
+              </h2>
+              <p className="guide-panel-sub">
+                {tourActive ? UI.guide.launcherTourDesc : UI.guide.subtitle}
+              </p>
             </div>
             <button type="button" className="guide-panel-close" onClick={onClose} aria-label="Close guide">
               <span className="material-symbols-outlined">close</span>
@@ -90,7 +95,7 @@ export default function GuideChatPanel({
             )}
           </div>
 
-          {!tourActive && (
+          {!tourActive && mode === GUIDE_PANEL_MODES.chat && (
             <div className="guide-quick-topics">
               {UI.guide.quickTopics.map((topic) => (
                 <button
@@ -125,28 +130,22 @@ export default function GuideChatPanel({
                 </button>
               </div>
             </div>
-          ) : (
-            <>
-              <button type="button" className="guide-start-tour" onClick={onStartTour}>
-                <span className="material-symbols-outlined">route</span>
-                {UI.guide.startTour}
+          ) : mode === GUIDE_PANEL_MODES.chat ? (
+            <form className="guide-input-row" onSubmit={handleSubmit}>
+              <input
+                type="text"
+                className="guide-input"
+                value={input}
+                onChange={(e) => onInputChange(e.target.value)}
+                placeholder={UI.guide.placeholder}
+                disabled={thinking}
+                aria-label="Message to guide"
+              />
+              <button type="submit" className="guide-send" data-testid="guide-send" disabled={thinking || !input.trim()} aria-label="Send">
+                <span className="material-symbols-outlined">send</span>
               </button>
-              <form className="guide-input-row" onSubmit={handleSubmit}>
-                <input
-                  type="text"
-                  className="guide-input"
-                  value={input}
-                  onChange={(e) => onInputChange(e.target.value)}
-                  placeholder={UI.guide.placeholder}
-                  disabled={thinking}
-                  aria-label="Message to guide"
-                />
-                <button type="submit" className="guide-send" data-testid="guide-send" disabled={thinking || !input.trim()} aria-label="Send">
-                  <span className="material-symbols-outlined">send</span>
-                </button>
-              </form>
-            </>
-          )}
+            </form>
+          ) : null}
         </motion.aside>
       )}
     </AnimatePresence>
