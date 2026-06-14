@@ -1,91 +1,97 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+
+const BOOT_MS = 4000
+const EXIT_MS = 380
+
+const LOG_LINES = [
+  { at: 0, text: 'corridor link · connecting' },
+  { at: 420, text: 'track geometry · ready' },
+  { at: 880, text: 'bogie assembly · ready' },
+  { at: 1360, text: 'segments S1–S6 · idle' },
+  { at: 2000, text: 'telemetry stream · live' },
+  { at: 2800, text: 'handoff to dashboard' },
+]
 
 export default function BootLoader({ onComplete }) {
+  const [lines, setLines] = useState([])
   const [progress, setProgress] = useState(0)
-  const [logs, setLogs] = useState([])
-  const [complete, setComplete] = useState(false)
-
-  const diagnosticSteps = [
-    { time: 300, msg: 'BF_SYSTEMS CORE: INITIALIZATION SEQUENCE INITIATED...' },
-    { time: 700, msg: 'WEBGL_PIPELINE: COMPILING SHADERS & GEOMETRY...' },
-    { time: 1200, msg: 'WEBGL_PIPELINE: TRACK_MODEL & BOGIE_MODEL LOADED [OK]' },
-    { time: 1800, msg: 'ML_ENGINE: GRADIENT_BOOSTING MODEL WEIGHTS VERIFIED [OK]' },
-    { time: 2400, msg: 'WEBSOCKET_BRIDGE: ESTABLISHING LINK TO FASTAPI...' },
-    { time: 3000, msg: 'WEBSOCKET_BRIDGE: LINK ESTABLISHED [OK]' },
-    { time: 3500, msg: 'SYSTEM_STATUS: ALL MULTI-AGENT CORRIDORS OPERATIONAL [NOMINAL]' },
-  ]
+  const [exiting, setExiting] = useState(false)
+  const finishedRef = useRef(false)
 
   useEffect(() => {
-    // Animate progress bar
-    const duration = 4000
-    const intervalTime = 50
-    const step = 100 / (duration / intervalTime)
+    const logTimers = LOG_LINES.map(({ at, text }) =>
+      setTimeout(() => setLines((prev) => [...prev, text]), at),
+    )
 
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        const next = Math.min(100, prev + step)
-        if (next >= 100) {
-          clearInterval(timer)
-          setComplete(true)
-        }
-        return next
-      })
-    }, intervalTime)
+    const start = performance.now()
+    let frameId = 0
 
-    // Staggered logs
-    const logTimers = diagnosticSteps.map((step) => {
-      return setTimeout(() => {
-        setLogs((prev) => [...prev, step.msg])
-      }, step.time)
-    })
+    const tick = (now) => {
+      const pct = Math.min(100, ((now - start) / BOOT_MS) * 100)
+      setProgress(pct)
+
+      if (pct < 100) {
+        frameId = requestAnimationFrame(tick)
+        return
+      }
+
+      if (finishedRef.current) return
+      finishedRef.current = true
+
+      window.setTimeout(() => {
+        setExiting(true)
+        window.setTimeout(onComplete, EXIT_MS)
+      }, 280)
+    }
+
+    frameId = requestAnimationFrame(tick)
 
     return () => {
-      clearInterval(timer)
       logTimers.forEach(clearTimeout)
+      cancelAnimationFrame(frameId)
     }
-  }, [])
+  }, [onComplete])
+
+  const statusLabel =
+    exiting ? 'Entering…' : progress >= 100 ? 'Ready' : 'Starting'
 
   return (
-    <div className="boot-overlay" role="dialog" aria-modal="true" aria-label="System Boot Sequence">
-      <div className="boot-grid" aria-hidden="true" />
-      <div className="boot-card">
-        <header className="boot-header">
-          <span className="boot-tag">BF_SYSTEMS // SECURE_BOOT</span>
-          <span className="boot-ver">v1.2.0</span>
+    <div
+      className={`boot-overlay ${exiting ? 'boot-overlay-out' : ''}`}
+      role="status"
+      aria-live="polite"
+      aria-label="Loading Bogie Flow"
+    >
+      <div className="boot-shell">
+        <header className="boot-brand">
+          <span className="boot-mark" aria-hidden="true" />
+          <div>
+            <h1 className="boot-title">Bogie Flow</h1>
+            <p className="boot-tagline">Ballast-first corridor monitoring</p>
+          </div>
         </header>
 
-        <div className="boot-terminal">
+        <div className="boot-terminal" aria-label="Startup log">
           <ul className="boot-log-list">
-            {logs.map((log, idx) => (
-              <li key={idx} className="boot-log-item">
-                <span className="boot-prefix">&gt;&gt;</span> {log}
+            {lines.map((line, i) => (
+              <li key={`${line}-${i}`} className="boot-log-item">
+                {line}
               </li>
             ))}
+            {!exiting && progress < 100 && (
+              <li className="boot-log-item boot-log-cursor" aria-hidden="true">
+                ▋
+              </li>
+            )}
           </ul>
         </div>
 
-        <div className="boot-progress-section">
-          <div className="boot-progress-meta">
-            <span className="boot-loading-text">
-              {complete ? 'SYSTEMS LOADED' : 'EXECUTING DIAGNOSTIC MODULES...'}
-            </span>
-            <span className="boot-percent">{Math.round(progress)}%</span>
-          </div>
-          <div className="boot-progress-track">
+        <footer className="boot-foot">
+          <div className="boot-progress-track" aria-hidden="true">
             <div className="boot-progress-fill" style={{ width: `${progress}%` }} />
           </div>
-        </div>
-
-        <div className="boot-action-area">
-          <button
-            type="button"
-            className={`btn-engage ${complete ? 'engage-ready' : ''}`}
-            onClick={complete ? onComplete : undefined}
-            disabled={!complete}
-          >
-            {complete ? 'ENGAGE COMMAND CENTER' : 'INITIALIZING TELEMETRY...'}
-          </button>
-        </div>
+          <span className="boot-status">{statusLabel}</span>
+        </footer>
       </div>
     </div>
   )

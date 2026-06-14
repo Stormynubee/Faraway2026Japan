@@ -4,23 +4,24 @@
 
 ## 1. Visual Theme & Atmosphere
 
-Surgical command-center aesthetic: charcoal surfaces, coral-red accent lines, monospace telemetry readouts. Dense but disciplined — industrial utilitarian, not decorative. No purple gradients, no x-ray wireframe overlays on 3D.
+Surgical command-center aesthetic: deep charcoal surfaces, coral-red accent lines, monospace telemetry readouts. Dense but disciplined — industrial utilitarian, not decorative. No purple gradients, no x-ray wireframe overlays, no glassmorphism blur, no CRT flicker effects.
 
 ## 2. Color Palette & Roles
 
 | Token | Hex | Role |
 |-------|-----|------|
-| background / surface | `#121317` | App shell |
-| surface-container | `#1e1f23` | Panels |
-| surface-container-lowest | `#0d0e12` | Footer, deep wells |
-| surface-variant | `#343539` | Borders, bar tracks |
-| primary (coral) | `#ffb4aa` | Accent, alerts, active nav |
-| primary-container | `#ff5545` | Critical highlights, CTA |
-| on-surface | `#e3e2e7` | Body text |
-| on-surface-variant | `#e7bdb7` | Labels, sparkline stroke |
-| outline-variant | `#5d3f3b` | Borders |
-| error-container | `#93000a` | LIVE badge background |
-| on-error-container | `#ffdad6` | LIVE badge text |
+| background | `#08090b` | App shell |
+| surface | `#0e1014` | Topbar, deep wells |
+| surface-container | `#151720` | Panels |
+| surface-container-low | `#0c0d10` | Sidebar, insets |
+| surface-container-high | `#1c1e28` | Hover states |
+| surface-dim | `#0a0b0e` | Footer, panel heads |
+| surface-variant | `#282a30` | Internal borders |
+| primary | `#ff5545` | Accent, alerts, active nav |
+| primary-container | `#cc3c2e` | Critical highlights, CTA |
+| on-surface | `#e2e4e9` | Body text |
+| on-surface-variant | `#9098a8` | Labels, muted text |
+| outline-variant | `#232630` | Panel borders |
 | healthy | `#22c55e` | Segment OK |
 | warning | `#eab308` | Segment warning |
 | critical | `#ef4444` / `#FF3B30` | Anomaly sphere, alerts |
@@ -33,20 +34,26 @@ Surgical command-center aesthetic: charcoal surfaces, coral-red accent lines, mo
 
 ## 4. Component Stylings
 
-- **Panels:** 2px radius, 1px outline-variant border
-- **glass-panel:** gradient 135deg rgba(30,31,35,0.8) → 0.4, backdrop blur 12px
-- **glow-active:** box-shadow 0 0 12px rgba(255, 59, 48, 0.4)
-- **3D viewport:** Solid Phong materials, hemisphere + directional lighting, slow rotation (~0.002 rad/frame), no mix-blend-screen. Drag-orbit, wheel zoom, segment raycast pick on corridor track.
+- **Panels:** 6px radius, 1px outline-variant border, hover lift on border-color
+- **Panel heads:** solid `surface-dim` background, no alpha transparency
+- **3D viewport:** Solid Phong materials, solid `#08090b` scene background with ground plane, hemisphere + directional lighting, single smooth scale pulse on anomaly sphere, no mix-blend-screen or emissive flicker. Drag-orbit, wheel zoom, segment raycast pick.
+- **Segment HUD:** Clean cells with critical state indicated by border color only — no backdrop-filter blur, no box-shadow glow
 - **MetricBar:** Three mono readouts derived from live `vib_z`, `az`, and `risk_index`
 - **Charts:** Telemetry history buffer (24 samples) drives moisture sparkline; corridor S1–S6 rainfall bars; soil-rain correlation from segment history or snapshot
 
-## 5. Layout
+## 5. Timing Tokens
+
+- `--transition-fast: 150ms ease` — border, background, color transitions
+- `--transition-normal: 250ms ease` — larger layout transitions
+- Boot loader: 4-second auto-handoff, no manual CTA
+
+## 6. Layout
 
 - Left docked sidebar (256px), top bar with open-ticket chip, scrollable main grid (8+4 columns on xl)
-- Fixed footer: live uptime, agent status, train segment; STATION_MAP modal (TrackMap SVG), NETWORK_LOGS → Maintenance, SOP_DOCS → `/public/sop.md`
+- Footer as flex child within workspace (not position:fixed)
 - Four views: Overview, Analysis, Maintenance, Climate
 
-## 6. Data flow
+## 7. Data flow
 
 - WebSocket `telemetry` merges `z_score`/`az` into segments and rolling history
 - `segment_update` includes hydrology + vibration fields
