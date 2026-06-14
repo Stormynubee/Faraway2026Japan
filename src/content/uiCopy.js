@@ -1,0 +1,116 @@
+/** Plain-language UI copy — technical terms kept, jargon explained inline. */
+
+export const UI = {
+  brand: {
+    name: 'Bogie Flow',
+    tagline: 'Track-bed monitoring',
+  },
+  nav: {
+    overview: 'Overview',
+    analysis: 'Analysis',
+    maintenance: 'Maintenance',
+    climate: 'Climate',
+    scan: 'Run corridor scan',
+    scanHint: 'Triggers a monsoon stress test on segment S4',
+    linkActive: 'Live data connected',
+    linkReconnecting: 'Reconnecting to server…',
+  },
+  topbar: {
+    connected: 'Connected',
+    reconnecting: 'Reconnecting',
+    tickets: (n) => `${n} open ticket${n !== 1 ? 's' : ''}`,
+  },
+  footer: {
+    uptime: 'Uptime',
+    agent: 'AI agent',
+    agentOk: 'Running normally',
+    agentReconnecting: 'Reconnecting',
+    segment: 'Train segment',
+    stationMap: 'Station map',
+    networkLogs: 'Network logs',
+    sopDocs: 'Procedure docs',
+  },
+  corridor: {
+    feedTitle: 'Corridor feed',
+    feedSub: 'Live track view · 64-frame scrub',
+    scrubHint: 'Scroll the page to move along the corridor · Hold Shift and wheel on the image to scrub frames · Drag the bar below',
+    live: 'Live',
+    scrubRailHint: 'Scroll page · Shift+wheel · drag bar',
+  },
+  briefing: {
+    title: 'What to do next',
+    sub: 'Priority plan from live telemetry',
+    today: 'Today',
+    train: 'Train location',
+    watch: 'Highest-risk segment',
+    tickets: 'Open tickets',
+    p1: (n) => `${n} urgent (P1)`,
+    planNominal: 'All six segments look normal. Keep routine corridor watch.',
+    planP1: (n) =>
+      `${n} urgent maintenance ticket${n > 1 ? 's' : ''} — check the maintenance queue first.`,
+    planCritical: (id, label) =>
+      `${id} needs attention (${label}). Open segment analysis before the next train pass.`,
+    planTrain: (seg) =>
+      `Train is at ${seg}. Watch vibration on the segments ahead.`,
+    review: (id) => `Review ${id}`,
+    maintenanceLog: 'Maintenance queue',
+    stationMap: 'Station map',
+  },
+  segments: {
+    stripStatus: {
+      critical: 'CRITICAL',
+      vibWarn: 'Vibration warning',
+      op: (pct) => `Track health ${pct}%`,
+    },
+  },
+  metrics: {
+    peak: 'Peak vibration',
+    peakTech: 'Peak amplitude (mm)',
+    fatigue: 'Fatigue load',
+    fatigueTech: 'Fatigue index (%)',
+    bearing: 'Bearing heat',
+    bearingTech: 'Bearing temperature (°C)',
+  },
+  climate: {
+    moistureTitle: 'Soil moisture (average)',
+    moistureTech: 'SOIL MOISTURE (AVG)',
+    rainTitle: 'Rainfall (24 hours)',
+    rainTech: 'PRECIPITATION / 24H',
+  },
+  simulation: {
+    title: 'Test scenarios',
+    sub: 'Inject simulated events into the live model',
+    apiReady: 'Backend ready',
+    apiOffline: 'Offline',
+    monsoon: 'Heavy rain · S4',
+    monsoonHint: 'Simulates monsoon on segment S4 (rain + soil saturation)',
+    anomaly: 'Track fault · S4',
+    anomalyHint: 'Injects a vibration anomaly on segment S4',
+    stress: (seg) => `Stress test · ${seg}`,
+    stressHint: 'Applies monsoon-level stress on the train’s current segment',
+    climateLink: 'Open climate view',
+    sent: 'Scenario sent to simulation',
+    offline: 'Backend unavailable — start the Python server',
+  },
+  anomaly: {
+    title: 'Live alerts',
+    empty: 'No anomalies right now',
+  },
+  guide: {
+    welcome:
+      'Hi — I can walk you through the dashboard or answer questions about segments, scrubbing, tickets, and simulations. Try a quick topic or start the guided tour.',
+    fabLabel: 'Open guide',
+    title: 'Corridor guide',
+    subtitle: 'Ask questions or take the step-by-step tour',
+    placeholder: 'Ask about segments, scrubbing, tickets…',
+    startTour: 'Start guided tour',
+    next: 'Next step',
+    back: 'Back',
+    skip: 'Skip tour',
+    finish: 'Finish',
+    askAi: 'Ask AI',
+    aiUnavailable:
+      'AI is off — using built-in answers. Add GUIDE_AI_API_KEY to `.env` in the project root for Gemini.',
+    quickTopics: ['How do I scrub the corridor?', 'What is P1?', 'Explain segments S1–S6', 'Simulation inject'],
+  },
+}

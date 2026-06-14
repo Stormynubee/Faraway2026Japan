@@ -20,6 +20,9 @@ export default function BootContinueButton({
         type="button"
         className="boot-continue"
         onClick={onContinue}
+        disabled={!visible}
+        tabIndex={visible ? 0 : -1}
+        aria-hidden={!visible}
         aria-label={`Continue to dashboard. Auto-continues in ${countdown} seconds`}
       >
         <span className="boot-continue-ring" aria-hidden="true">

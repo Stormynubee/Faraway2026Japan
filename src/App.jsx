@@ -9,6 +9,7 @@ import MaintenanceView from './components/views/MaintenanceView'
 import ClimateView from './components/views/ClimateView'
 import BootLoader from './components/BootLoader'
 import { highestRiskSegment } from './lib/segmentUtils.js'
+import { UI } from './content/uiCopy.js'
 
 function formatUptime(seconds) {
   const h = Math.floor(seconds / 3600)
@@ -77,7 +78,7 @@ export default function App() {
   const footerSegment =
     train?.segment_id ?? highestRiskSegment(segments)?.id ?? '—'
   const uptimeLabel = connected ? formatUptime(uptimeSec) : '—'
-  const agentLabel = connected ? 'NOMINAL' : 'RECONNECTING'
+  const agentLabel = connected ? UI.footer.agentOk : UI.footer.agentReconnecting
 
   const handleBootComplete = useCallback(() => setBooted(true), [])
 
@@ -101,16 +102,23 @@ export default function App() {
           onNavigateMaintenance={goMaintenance}
         />
 
-        <main className={`main-grid ${view !== 'overview' ? 'main-grid-single' : ''}`}>
+        <main
+          className={`main-grid ${view === 'overview' ? 'main-grid-overview' : ''} ${view !== 'overview' ? 'main-grid-single' : ''}`}
+        >
           {view === 'overview' && (
             <OverviewView
               segments={segments}
-              train={train}
               tickets={tickets}
               logs={logs}
+              train={train}
+              connected={connected}
+              openTicketCount={openTickets}
               activeRiskIndex={activeRiskIndex}
               segmentHistory={segmentHistory}
               onSegmentClick={handleSegmentClick}
+              onOpenStationMap={() => setStationMapOpen(true)}
+              onNavigate={setView}
+              onGoMaintenance={goMaintenance}
             />
           )}
           {view === 'analysis' && (
@@ -133,15 +141,16 @@ export default function App() {
         <footer className="app-footer">
           <span>
             <span className="footer-dot" />
-            UPTIME: {uptimeLabel} | AGENT: {agentLabel} | SEGMENT: {footerSegment}
+            {UI.footer.uptime}: {uptimeLabel} | {UI.footer.agent}: {agentLabel} |{' '}
+            {UI.footer.segment}: {footerSegment}
           </span>
           <span className="footer-links">
             <button type="button" className="footer-link" onClick={() => setStationMapOpen(true)}>
-              STATION_MAP
+              {UI.footer.stationMap}
             </button>
             <span className="footer-sep">|</span>
             <button type="button" className="footer-link" onClick={goMaintenance}>
-              NETWORK_LOGS
+              {UI.footer.networkLogs}
             </button>
             <span className="footer-sep">|</span>
             <a
@@ -150,7 +159,7 @@ export default function App() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              SOP_DOCS
+              {UI.footer.sopDocs}
             </a>
           </span>
         </footer>

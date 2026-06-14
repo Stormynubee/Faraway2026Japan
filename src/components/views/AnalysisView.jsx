@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState } from 'react'
+import { useState } from 'react'
 import {
   computeMetrics,
   highestRiskSegment,
@@ -6,9 +6,7 @@ import {
 } from '../../lib/segmentUtils.js'
 import { soilRainCorrelationData } from '../../lib/chartData.js'
 import MetricBar from '../MetricBar'
-import LogEntry from '../LogEntry'
-
-const BogieWheelScene = lazy(() => import('../BogieWheelScene'))
+import BogieAnalysisPanel from '../BogieAnalysisPanel'
 
 function SoilRainCorrelation({ segments, segmentHistory, focusId }) {
   const { heights, linePoints, peakIndex, labels } = soilRainCorrelationData(
@@ -68,7 +66,6 @@ export default function AnalysisView({
   onSelectSegment,
   onNavigateMaintenance,
 }) {
-  const sceneRef = useRef(null)
   const [deployState, setDeployState] = useState('idle')
 
   const focus =
@@ -118,7 +115,7 @@ export default function AnalysisView({
           : 'AUTHORIZE DEPLOYMENT'
 
   return (
-    <div className="analysis-layout">
+    <div className="analysis-layout" data-guide="analysis-main">
       <div className="analysis-main">
         <div className="analysis-header">
           <div>
@@ -142,33 +139,13 @@ export default function AnalysisView({
           </button>
         </div>
 
-        <section className="panel analysis-viewport panel-enter">
-          <div className="viewport-toolbar">
-            <span className="model-label">
-              <span className="model-dot" /> MODEL: BOGIE_AXLE_{focus.id}
-            </span>
-            <div className="viewport-controls">
-              <button
-                type="button"
-                aria-label="Zoom in"
-                onClick={() => sceneRef.current?.setZoom(-1)}
-              >
-                <span className="material-symbols-outlined">zoom_in</span>
-              </button>
-              <button
-                type="button"
-                aria-label="Reset view"
-                onClick={() => sceneRef.current?.resetView()}
-              >
-                <span className="material-symbols-outlined">center_focus_strong</span>
-              </button>
-            </div>
-          </div>
-          <div className="matrix-viewport analysis-3d">
-            <Suspense fallback={<div className="bogie-loading">Loading model…</div>}>
-              <BogieWheelScene ref={sceneRef} focusSegment={focus} />
-            </Suspense>
-          </div>
+        <section className="panel panel-editorial analysis-viewport panel-enter">
+          <BogieAnalysisPanel
+            focusId={focus.id}
+            vibZ={focus.vib_z ?? 0}
+            az={focus.az ?? 0}
+            riskIndex={focus.risk_index ?? 0}
+          />
           <div className="gauge-row">
             <MetricBar
               segments={segments}

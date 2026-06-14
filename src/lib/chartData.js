@@ -1,5 +1,17 @@
 const STITCH_MOISTURE_PATH =
-  'M0 30 Q 10 20, 20 25 T 40 15 T 60 20 T 80 10 T 100 15'
+  'M0 28 Q 10 18, 20 23 T 40 13 T 60 18 T 80 12 T 100 17'
+
+export const SPARKLINE_VIEWBOX = '0 0 100 40'
+const SPARK_W = 100
+const SPARK_H = 40
+const SPARK_PAD_TOP = 8
+const SPARK_PAD_BOTTOM = 6
+const SPARK_INNER_H = SPARK_H - SPARK_PAD_TOP - SPARK_PAD_BOTTOM
+
+function valueToSparkY(v) {
+  const clamped = Math.max(0, Math.min(1, v))
+  return SPARK_PAD_TOP + SPARK_INNER_H * (1 - clamped)
+}
 
 const SEGMENT_ORDER = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6']
 
@@ -8,18 +20,16 @@ export function moistureSparklinePath(values) {
     return STITCH_MOISTURE_PATH
   }
 
-  const w = 100
-  const h = 40
-  const step = w / Math.max(values.length - 1, 1)
+  const step = SPARK_W / Math.max(values.length - 1, 1)
 
   const points = values.map((v, i) => {
     const x = i * step
-    const y = h - v * h * 0.8 - 4
+    const y = valueToSparkY(v)
     return `${x.toFixed(1)} ${y.toFixed(1)}`
   })
 
   if (points.length === 1) {
-    return `M${points[0]} L${w} ${points[0].split(' ')[1]}`
+    return `M${points[0]} L${SPARK_W} ${points[0].split(' ')[1]}`
   }
 
   return `M${points.join(' L')}`
@@ -63,5 +73,5 @@ export function soilRainCorrelationData(segments, segmentHistory, focusId) {
 }
 
 export function moistureSparklineFillPath(linePath) {
-  return `${linePath} L 100 40 L 0 40 Z`
+  return `${linePath} L ${SPARK_W} ${SPARK_H} L 0 ${SPARK_H} Z`
 }

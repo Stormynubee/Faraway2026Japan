@@ -1,94 +1,58 @@
-import { lazy, Suspense, useRef } from 'react'
-import SegmentHudGrid from '../SegmentHudGrid'
-import MetricBar from '../MetricBar'
+import { useRef } from 'react'
+import CorridorCommandDock from '../CorridorCommandDock'
 import ClimatePanel from '../ClimatePanel'
-import ControlPanel from '../ControlPanel'
 import AnomalyStream from '../AnomalyStream'
-
-const TrackScene = lazy(() => import('../TrackScene'))
+import CorridorBriefing from '../CorridorBriefing'
+import OverviewOpsStrip from '../OverviewOpsStrip'
 
 export default function OverviewView({
   segments,
-  train,
   tickets,
   logs,
+  train,
+  connected,
+  openTicketCount,
   activeRiskIndex,
   segmentHistory,
   onSegmentClick,
+  onOpenStationMap,
+  onNavigate,
+  onGoMaintenance,
 }) {
-  const sceneRef = useRef(null)
+  const overviewShellRef = useRef(null)
 
   return (
-    <>
-      <div className="main-primary">
-        <section className="panel corridor-matrix panel-enter">
-          <div className="panel-head">
-            <h2>
-              <span className="material-symbols-outlined panel-icon">ssid_chart</span>
-              CORRIDOR RISK MATRIX
-            </h2>
-            <span className="live-badge">
-              LIVE FEED <span className="live-dot">●</span>
-            </span>
-          </div>
+    <div className="overview-page" ref={overviewShellRef}>
+      <div className="overview-grid">
+        <CorridorCommandDock
+          segments={segments}
+          activeRiskIndex={activeRiskIndex}
+          onSegmentClick={onSegmentClick}
+          driveShellRef={overviewShellRef}
+        />
 
-          <div className="viewport-toolbar">
-            <span className="model-label">
-              <span className="model-dot" /> MODEL: CORRIDOR_TRACK
-            </span>
-            <div className="viewport-controls">
-              <button
-                type="button"
-                aria-label="Zoom in"
-                onClick={() => sceneRef.current?.setZoom(-1)}
-              >
-                <span className="material-symbols-outlined">zoom_in</span>
-              </button>
-              <button
-                type="button"
-                aria-label="Reset view"
-                onClick={() => sceneRef.current?.resetView()}
-              >
-                <span className="material-symbols-outlined">center_focus_strong</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="matrix-viewport">
-            <Suspense
-              fallback={
-                <div className="track-scene bogie-loading">Loading corridor…</div>
-              }
-            >
-              <TrackScene
-                ref={sceneRef}
-                segments={segments}
-                train={train}
-                onSegmentClick={onSegmentClick}
-              />
-            </Suspense>
-          </div>
-          <SegmentHudGrid segments={segments} onSegmentClick={onSegmentClick} />
-
-          <div className="gauge-row">
-            <MetricBar segments={segments} activeRiskIndex={activeRiskIndex} />
-          </div>
-        </section>
-
-        <ClimatePanel segments={segments} segmentHistory={segmentHistory} />
-
-        <div id="controls-panel" className="panel controls-panel panel-enter">
-          <h2>
-            <span className="material-symbols-outlined panel-icon">tune</span>
-            INJECTION CONTROLS
-          </h2>
-          <ControlPanel />
+        <div className="overview-side-stack">
+          <CorridorBriefing
+            train={train}
+            segments={segments}
+            tickets={tickets}
+            openTicketCount={openTicketCount}
+            onAnalyzeSegment={onSegmentClick}
+            onGoMaintenance={onGoMaintenance}
+            onOpenStationMap={onOpenStationMap}
+          />
+          <ClimatePanel segments={segments} segmentHistory={segmentHistory} />
+          <OverviewOpsStrip
+            train={train}
+            connected={connected}
+            onNavigate={onNavigate}
+          />
         </div>
       </div>
 
-      <div className="main-secondary">
-        <AnomalyStream tickets={tickets} logs={logs} />
-      </div>
-    </>
+      <aside className="overview-aside">
+        <AnomalyStream tickets={tickets} logs={logs} maxEntries={8} />
+      </aside>
+    </div>
   )
 }

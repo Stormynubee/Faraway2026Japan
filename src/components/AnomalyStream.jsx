@@ -1,6 +1,7 @@
 import LogEntry from './LogEntry'
+import { UI } from '../content/uiCopy.js'
 
-export default function AnomalyStream({ tickets, logs }) {
+export default function AnomalyStream({ tickets, logs, animate = false, maxEntries = 12 }) {
   const entries = [
     ...tickets.map((t) => ({
       key: t.id,
@@ -18,23 +19,25 @@ export default function AnomalyStream({ tickets, logs }) {
       title: log.message?.slice(0, 48) || 'LOG',
       detail: '',
     })),
-  ].slice(0, 12)
+  ].slice(0, maxEntries)
 
   return (
-    <section className="panel anomaly-stream">
-      <div className="panel-head">
-        <h2>
+    <section className="panel panel-calm anomaly-stream" data-guide="anomaly-stream">
+      <div className="panel-head panel-head-calm">
+        <h2 className="panel-title-calm panel-title-with-icon">
           <span className="material-symbols-outlined panel-icon">sensors</span>
-          ANOMALY STREAM
+          {UI.anomaly.title}
         </h2>
-        <span className="live-tag">LIVE</span>
+        <span className="scrub-live-pill">
+          <span className="scrub-live-dot" aria-hidden="true" /> Live
+        </span>
       </div>
       <ul className="stream-list">
         {entries.length === 0 && (
           <li className="stream-item stream-muted">Waiting for telemetry…</li>
         )}
-        {entries.map((e) => (
-          <LogEntry key={e.key} entry={e} />
+        {entries.map((e, i) => (
+          <LogEntry key={e.key} entry={e} animate={animate} index={i} />
         ))}
       </ul>
     </section>

@@ -1,6 +1,7 @@
 import {
   moistureSparklinePath,
   moistureSparklineFillPath,
+  SPARKLINE_VIEWBOX,
 } from '../../lib/chartData.js'
 import { highestRiskSegment } from '../../lib/segmentUtils.js'
 
@@ -24,7 +25,7 @@ export default function MoistureSparkline({ segments, segmentHistory }) {
       <svg
         className="sparkline-svg"
         preserveAspectRatio="none"
-        viewBox="0 0 100 40"
+        viewBox={SPARKLINE_VIEWBOX}
         aria-hidden="true"
       >
         <path d={fillPath} fill="rgba(231,189,183,0.05)" />

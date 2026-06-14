@@ -4,57 +4,54 @@
 
 ## 1. Visual Theme & Atmosphere
 
-Surgical command-center aesthetic: deep charcoal surfaces, coral-red accent lines, monospace telemetry readouts. Dense but disciplined — industrial utilitarian, not decorative. No purple gradients, no x-ray wireframe overlays, no glassmorphism blur, no CRT flicker effects.
+Calm instrument panel: blue-slate surfaces, teal live accent, semantic amber/red for warnings and critical only. Dense but readable — industrial utilitarian, not alarmist. Overview uses a fixed-height corridor hero dock with scrub rail below the canvas (no overlay on the train image).
 
 ## 2. Color Palette & Roles
 
 | Token | Hex | Role |
 |-------|-----|------|
-| background | `#08090b` | App shell |
-| surface | `#0e1014` | Topbar, deep wells |
-| surface-container | `#151720` | Panels |
-| surface-container-low | `#0c0d10` | Sidebar, insets |
-| surface-container-high | `#1c1e28` | Hover states |
-| surface-dim | `#0a0b0e` | Footer, panel heads |
-| surface-variant | `#282a30` | Internal borders |
-| primary | `#ff5545` | Accent, alerts, active nav |
-| primary-container | `#cc3c2e` | Critical highlights, CTA |
-| on-surface | `#e2e4e9` | Body text |
-| on-surface-variant | `#9098a8` | Labels, muted text |
-| outline-variant | `#232630` | Panel borders |
-| healthy | `#22c55e` | Segment OK |
-| warning | `#eab308` | Segment warning |
-| critical | `#ef4444` / `#FF3B30` | Anomaly sphere, alerts |
+| background | `#0a0e12` | App shell |
+| surface-container | `#111820` | Panels |
+| surface-container-high | `#161f2a` | Hover states |
+| accent (primary) | `#3dd6c6` | Live, interactive, focus |
+| accent-warm | `#e8a838` | Warnings, elevated segments |
+| on-surface | `#e8edf4` | Body text |
+| on-surface-variant | `#8b99aa` | Labels |
+| outline-variant | `#243041` | Panel borders |
+| healthy | `#34d399` | Segment OK |
+| warning | `#e8a838` | Segment warning |
+| critical | `#f07167` | P1 tickets, critical segments only |
+
+**Semantic rule:** Red is reserved for critical/P1. Teal indicates live and interactive. Amber indicates watch/elevated risk.
 
 ## 3. Typography
 
-- **Display / UI:** Hanken Grotesk (600–700 headings, 400 body)
-- **Telemetry:** JetBrains Mono — label-caps (12px, 0.1em tracking), data-readout (14px), data-readout-lg (18px)
+- **Display / UI:** Hanken Grotesk (600 headings, sentence case panel titles)
+- **Telemetry:** JetBrains Mono — frame counts, mm, °C, segment values only
 - **Icons:** Material Symbols Outlined (weight 300)
 
 ## 4. Component Stylings
 
-- **Panels:** 6px radius, 1px outline-variant border, hover lift on border-color
-- **Panel heads:** solid `surface-dim` background, no alpha transparency
-- **3D viewport:** Solid Phong materials, solid `#08090b` scene background with ground plane, hemisphere + directional lighting, single smooth scale pulse on anomaly sphere, no mix-blend-screen or emissive flicker. Drag-orbit, wheel zoom, segment raycast pick.
-- **Segment HUD:** Clean cells with critical state indicated by border color only — no backdrop-filter blur, no box-shadow glow
-- **MetricBar:** Three mono readouts derived from live `vib_z`, `az`, and `risk_index`
-- **Charts:** Telemetry history buffer (24 samples) drives moisture sparkline; corridor S1–S6 rainfall bars; soil-rain correlation from segment history or snapshot
+- **Corridor command dock:** Sticky hero (~52vh): canvas `clamp(280px, 45vh, 520px)` + scrub rail + horizontal segment strip + metric strip
+- **CorridorScrubViewer:** Canvas only — no text overlay on image
+- **CorridorScrubRail:** LIVE pill, frame readout, progress track (rAF-driven fill)
+- **Segment HUD:** Horizontal strip on Overview; grid layout on other views if reused
+- **MetricBar:** Three mono readouts from live `vib_z`, `az`, `risk_index`
+- **Motion:** Framer Motion enter stagger on Overview; `prefers-reduced-motion` disables transforms
 
 ## 5. Timing Tokens
 
-- `--transition-fast: 150ms ease` — border, background, color transitions
-- `--transition-normal: 250ms ease` — larger layout transitions
-- Boot loader: 4-second auto-handoff, no manual CTA
+- `--transition-fast: 150ms ease`
+- `--transition-normal: 250ms ease`
+- Boot loader: 3-second auto-handoff with Continue button
 
 ## 6. Layout
 
-- Left docked sidebar (256px), top bar with open-ticket chip, scrollable main grid (8+4 columns on xl)
-- Footer as flex child within workspace (not position:fixed)
+- Left sidebar, top bar, scrollable main grid (1fr + 340px anomaly column on xl)
+- Overview: sticky hero dock + scrollable climate/controls; sticky anomaly column xl+
 - Four views: Overview, Analysis, Maintenance, Climate
 
 ## 7. Data flow
 
-- WebSocket `telemetry` merges `z_score`/`az` into segments and rolling history
-- `segment_update` includes hydrology + vibration fields
-- AUTHORIZE DEPLOYMENT → `POST /api/inject/anomaly`
+- WebSocket telemetry → segments, metrics, charts (unchanged)
+- Corridor frame index: **manual scrub only** — scroll, wheel, pointer, scrub rail

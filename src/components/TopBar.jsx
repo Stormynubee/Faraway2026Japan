@@ -1,9 +1,11 @@
+import { UI } from '../content/uiCopy.js'
+
 export default function TopBar({ connected, openTicketCount, onNavigateMaintenance }) {
   return (
-    <header className="topbar">
+    <header className="topbar topbar-editorial">
       <div className="topbar-brand">
         <span className="pulse-dot" />
-        BOGIE FLOW
+        {UI.brand.name}
       </div>
       <div className="topbar-actions">
         {openTicketCount > 0 && (
@@ -13,12 +15,12 @@ export default function TopBar({ connected, openTicketCount, onNavigateMaintenan
             onClick={() => onNavigateMaintenance?.()}
           >
             <span className="material-symbols-outlined">confirmation_number</span>
-            {openTicketCount} OPEN TICKET{openTicketCount !== 1 ? 'S' : ''}
+            {UI.topbar.tickets(openTicketCount)}
           </button>
         )}
         <div className={`system-chip ${connected ? 'nominal' : 'warn'}`}>
           <span className="chip-dot" />
-          {connected ? 'SYSTEM_STATUS_NOMINAL' : 'SYSTEM_RECONNECTING'}
+          {connected ? UI.topbar.connected : UI.topbar.reconnecting}
         </div>
       </div>
     </header>
