@@ -36,12 +36,18 @@ Surgical command-center aesthetic: charcoal surfaces, coral-red accent lines, mo
 - **Panels:** 2px radius, 1px outline-variant border
 - **glass-panel:** gradient 135deg rgba(30,31,35,0.8) → 0.4, backdrop blur 12px
 - **glow-active:** box-shadow 0 0 12px rgba(255, 59, 48, 0.4)
-- **3D viewport:** Solid Phong materials, slow rotation (~0.002 rad/frame), no mix-blend-screen
-- **MetricBar:** Three mono readouts — Peak Amplitude, Fatigue Index, Bearing Temp
-- **Charts:** SVG sparkline (moisture), bar chart with coral peak dot (rain)
+- **3D viewport:** Solid Phong materials, hemisphere + directional lighting, slow rotation (~0.002 rad/frame), no mix-blend-screen. Drag-orbit, wheel zoom, segment raycast pick on corridor track.
+- **MetricBar:** Three mono readouts derived from live `vib_z`, `az`, and `risk_index`
+- **Charts:** Telemetry history buffer (24 samples) drives moisture sparkline; corridor S1–S6 rainfall bars; soil-rain correlation from segment history or snapshot
 
 ## 5. Layout
 
-- Left docked sidebar (256px), top bar, scrollable main grid (8+4 columns on xl)
-- Fixed footer telemetry strip with STATION_MAP | NETWORK_LOGS | SOP_DOCS
+- Left docked sidebar (256px), top bar with open-ticket chip, scrollable main grid (8+4 columns on xl)
+- Fixed footer: live uptime, agent status, train segment; STATION_MAP modal (TrackMap SVG), NETWORK_LOGS → Maintenance, SOP_DOCS → `/public/sop.md`
 - Four views: Overview, Analysis, Maintenance, Climate
+
+## 6. Data flow
+
+- WebSocket `telemetry` merges `z_score`/`az` into segments and rolling history
+- `segment_update` includes hydrology + vibration fields
+- AUTHORIZE DEPLOYMENT → `POST /api/inject/anomaly`

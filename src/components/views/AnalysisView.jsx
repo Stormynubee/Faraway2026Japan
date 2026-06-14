@@ -1,13 +1,23 @@
-import { lazy, Suspense, useRef } from 'react'
-import { computeMetrics, highestRiskSegment } from '../../lib/segmentUtils.js'
+import { lazy, Suspense, useRef, useState } from 'react'
+import {
+  computeMetrics,
+  highestRiskSegment,
+  segmentCoordinates,
+} from '../../lib/segmentUtils.js'
+import { soilRainCorrelationData } from '../../lib/chartData.js'
 import MetricBar from '../MetricBar'
 import LogEntry from '../LogEntry'
 
 const BogieWheelScene = lazy(() => import('../BogieWheelScene'))
 
-function SoilRainCorrelation({ segments }) {
-  const heights = [20, 40, 30, 60, 80, 50, 90, 30]
-  const highlightIdx = 3
+function SoilRainCorrelation({ segments, segmentHistory, focusId }) {
+  const { heights, linePoints, peakIndex, labels } = soilRainCorrelationData(
+    segments,
+    segmentHistory,
+    focusId,
+  )
+  const count = heights.length
+  const barW = 200 / count
 
   return (
     <div className="panel correlation-card">
@@ -22,15 +32,17 @@ function SoilRainCorrelation({ segments }) {
           {heights.map((h, i) => (
             <rect
               key={i}
-              x={i * 25 + 4}
+              x={i * barW + 4}
               y={80 - h * 0.7}
-              width={18}
+              width={barW - 8}
               height={h * 0.7}
-              fill={i === highlightIdx ? '#ff5545' : 'rgba(52,53,57,0.8)'}
+              fill={i === peakIndex ? '#ff5545' : 'rgba(52,53,57,0.8)'}
             />
           ))}
           <polyline
-            points={heights.map((h, i) => `${i * 25 + 13},${80 - h * 0.65}`).join(' ')}
+            points={linePoints
+              .map((h, i) => `${i * barW + barW / 2},${80 - h * 0.65}`)
+              .join(' ')}
             fill="none"
             stroke="#e7bdb7"
             strokeWidth="1.5"
@@ -38,7 +50,7 @@ function SoilRainCorrelation({ segments }) {
           />
         </svg>
         <div className="correlation-labels">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((d) => (
+          {labels.map((d) => (
             <span key={d}>{d}</span>
           ))}
         </div>
@@ -51,16 +63,21 @@ export default function AnalysisView({
   segments,
   activeRiskIndex,
   logs,
+  segmentHistory,
   selectedSegmentId,
   onSelectSegment,
+  onNavigateMaintenance,
 }) {
   const sceneRef = useRef(null)
+  const [deployState, setDeployState] = useState('idle')
+
   const focus =
     segments.find((s) => s.id === selectedSegmentId) ??
     highestRiskSegment(segments) ??
     { id: 'S3' }
 
-  const metrics = computeMetrics(segments, activeRiskIndex)
+  const metrics = computeMetrics(segments, activeRiskIndex, focus)
+  const coords = segmentCoordinates(focus.id)
 
   const historyEntries = logs.slice(-5).map((log, i) => ({
     key: `hist-${log.timestamp}-${i}`,
@@ -70,6 +87,35 @@ export default function AnalysisView({
     title: log.message?.slice(0, 40),
     status: log.message?.includes('CRITICAL') ? 'CRITICAL' : 'NOMINAL',
   }))
+
+  const handleAuthorize = async () => {
+    setDeployState('loading')
+    try {
+      const res = await fetch('/api/inject/anomaly', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ segment_id: focus.id }),
+      })
+      if (!res.ok) throw new Error('deploy failed')
+      setDeployState('done')
+      setTimeout(() => {
+        setDeployState('idle')
+        onNavigateMaintenance?.()
+      }, 1200)
+    } catch {
+      setDeployState('error')
+      setTimeout(() => setDeployState('idle'), 2000)
+    }
+  }
+
+  const deployLabel =
+    deployState === 'loading'
+      ? 'DEPLOYING…'
+      : deployState === 'done'
+        ? 'DEPLOYED'
+        : deployState === 'error'
+          ? 'FAILED'
+          : 'AUTHORIZE DEPLOYMENT'
 
   return (
     <div className="analysis-layout">
@@ -81,16 +127,22 @@ export default function AnalysisView({
             </p>
             <h1 className="analysis-title">Vibration Signature</h1>
             <p className="analysis-sub">
-              LIVE FREQUENCY: {metrics.liveFrequency} Hz
+              LIVE FREQUENCY: {metrics.liveFrequency} Hz &nbsp;|&nbsp; Z-SCORE:{' '}
+              {(focus.vib_z ?? 0).toFixed(2)}
             </p>
           </div>
-          <button type="button" className="btn-authorize">
+          <button
+            type="button"
+            className={`btn-authorize ${deployState === 'done' ? 'btn-authorize-done' : ''}`}
+            onClick={handleAuthorize}
+            disabled={deployState === 'loading' || deployState === 'done'}
+          >
             <span className="material-symbols-outlined">warning</span>
-            AUTHORIZE DEPLOYMENT
+            {deployLabel}
           </button>
         </div>
 
-        <section className="panel analysis-viewport">
+        <section className="panel analysis-viewport panel-enter">
           <div className="viewport-toolbar">
             <span className="model-label">
               <span className="model-dot" /> MODEL: BOGIE_AXLE_{focus.id}
@@ -114,14 +166,18 @@ export default function AnalysisView({
           </div>
           <div className="matrix-viewport analysis-3d">
             <Suspense fallback={<div className="bogie-loading">Loading model…</div>}>
-              <BogieWheelScene ref={sceneRef} />
+              <BogieWheelScene ref={sceneRef} focusSegment={focus} />
             </Suspense>
           </div>
           <div className="gauge-row">
-            <MetricBar segments={segments} activeRiskIndex={activeRiskIndex} />
+            <MetricBar
+              segments={segments}
+              activeRiskIndex={activeRiskIndex}
+              focusSegment={focus}
+            />
           </div>
           <p className="coords-readout">
-            {focus.id}_X: 45.9281° N &nbsp; {focus.id}_Y: 12.8493° E
+            {focus.id}_X: {coords.lat}° N &nbsp; {focus.id}_Y: {coords.lon}° E
           </p>
         </section>
 
@@ -140,7 +196,11 @@ export default function AnalysisView({
       </div>
 
       <div className="analysis-side">
-        <SoilRainCorrelation segments={segments} />
+        <SoilRainCorrelation
+          segments={segments}
+          segmentHistory={segmentHistory}
+          focusId={focus.id}
+        />
 
         <div className="panel historical-card">
           <div className="panel-head">

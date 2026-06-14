@@ -1,7 +1,12 @@
 import { computeMetrics } from '../lib/segmentUtils.js'
 
-export default function MetricBar({ segments, activeRiskIndex, highlightPeak = true }) {
-  const m = computeMetrics(segments, activeRiskIndex)
+export default function MetricBar({
+  segments,
+  activeRiskIndex,
+  focusSegment = null,
+  highlightPeak = true,
+}) {
+  const m = computeMetrics(segments, activeRiskIndex, focusSegment)
 
   return (
     <div className="metric-bar">

@@ -403,7 +403,8 @@ body {
 
 .matrix-viewport {
   position: relative;
-  height: 320px;
+  min-height: 360px;
+  height: 360px;
   background: #000;
 }
 
@@ -445,6 +446,8 @@ body {
   padding: 8px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius);
+  background: rgba(13, 14, 18, 0.55);
+  backdrop-filter: blur(4px);
   cursor: pointer;
   pointer-events: auto;
   font: inherit;
@@ -634,6 +637,9 @@ body {
   background: var(--surface-variant);
 }
 
+.rain-bar-dim { opacity: 0.35; }
+.rain-bar-mid { opacity: 0.65; }
+.rain-bar-bright { opacity: 1; }
 .rain-opacity-30 { opacity: 0.3; }
 .rain-opacity-50 { opacity: 0.5; }
 .rain-opacity-80 { opacity: 0.8; }
@@ -1181,13 +1187,112 @@ body {
   font-size: 0.65rem;
 }
 
-.footer-links a {
+.footer-links a,
+.footer-link {
   color: var(--on-surface-variant);
   text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
 }
 
-.footer-links a:hover {
+.footer-links a:hover,
+.footer-link:hover {
   color: var(--primary);
+}
+
+.ticket-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--outline-variant);
+  background: rgba(255, 85, 69, 0.15);
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  cursor: pointer;
+}
+
+.ticket-chip .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.btn-authorize-done {
+  background: var(--healthy) !important;
+  border-color: var(--healthy) !important;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+.modal-panel {
+  width: min(560px, 92vw);
+  max-height: 80vh;
+  overflow: auto;
+  background: var(--surface-container);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.station-map-modal .track-map {
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+@keyframes panelEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel-enter {
+  animation: panelEnter 0.4s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-enter {
+    animation: none;
+  }
 }
 
 .footer-sep {

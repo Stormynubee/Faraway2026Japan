@@ -50,7 +50,7 @@ export default function MaintenanceView({ tickets, logs }) {
         </div>
       </section>
 
-      <section className="panel maintenance-logs">
+      <section id="network-logs" className="panel maintenance-logs">
         <div className="panel-head">
           <h2>
             <span className="material-symbols-outlined panel-icon">terminal</span>

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
 import { createBogieScene } from '../scenes/bogieScene.js'
 
-const BogieWheelScene = forwardRef(function BogieWheelScene(_props, ref) {
+const BogieWheelScene = forwardRef(function BogieWheelScene({ focusSegment }, ref) {
   const mountRef = useRef(null)
   const sceneRef = useRef(null)
+  const focusRef = useRef(focusSegment)
+  focusRef.current = focusSegment
 
   useImperativeHandle(ref, () => ({
     setZoom: (delta) => sceneRef.current?.setZoom(delta),
@@ -14,7 +16,7 @@ const BogieWheelScene = forwardRef(function BogieWheelScene(_props, ref) {
     const container = mountRef.current
     if (!container) return
 
-    const scene = createBogieScene(container)
+    const scene = createBogieScene(container, { focusSegmentRef: focusRef })
     sceneRef.current = scene
 
     return () => {

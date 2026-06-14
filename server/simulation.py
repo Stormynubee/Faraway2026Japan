@@ -55,15 +55,7 @@ class SimulationEngine:
         seg.k_effective = result["k_effective"]
         seg.state = result["state"]
         self._push_log("hydrology", f"{segment_id}: {result['description']}")
-        update = {
-            "type": "segment_update",
-            "id": segment_id,
-            "risk_index": seg.risk_index,
-            "k_effective": seg.k_effective,
-            "state": seg.state,
-            "color": seg.to_dict()["color"],
-        }
-        self.on_event(update)
+        self.on_event(self._segment_update_payload(segment_id))
         return {"segment": seg.to_dict(), "hydrology": result}
 
     def inject_anomaly(self, segment_id: str) -> dict:
@@ -73,11 +65,29 @@ class SimulationEngine:
         self._evaluate_segment(segment_id, vib)
         return {"segment": seg.to_dict(), "vibration": vib}
 
+    def _segment_update_payload(self, segment_id: str) -> dict:
+        seg = self.segments[segment_id]
+        return {
+            "type": "segment_update",
+            "id": segment_id,
+            "risk_index": seg.risk_index,
+            "k_effective": seg.k_effective,
+            "state": seg.state,
+            "color": seg.to_dict()["color"],
+            "rainfall": seg.rainfall,
+            "soil_moisture": seg.soil_moisture,
+            "vib_z": seg.vib_z,
+            "az": seg.az,
+        }
+
     def tick(self) -> None:
         self._advance_train()
         seg_id = self.train.segment_id
         az = self._sample_az(seg_id)
         vib = self.vibration.push(seg_id, az=az)
+        seg = self.segments[seg_id]
+        seg.az = az
+        seg.vib_z = vib.get("z_score", 0.0)
         self.on_event(
             {
                 "type": "telemetry",
@@ -87,6 +97,7 @@ class SimulationEngine:
                 "timestamp": time.time(),
             }
         )
+        self.on_event(self._segment_update_payload(seg_id))
         self.on_event(
             {
                 "type": "train_update",
@@ -137,14 +148,5 @@ class SimulationEngine:
             elif ticket.priority == "P2" and seg.state == "HEALTHY":
                 seg.state = "WARNING_WATERLOGGING"
             self.on_event(ticket.to_dict())
-            self.on_event(
-                {
-                    "type": "segment_update",
-                    "id": segment_id,
-                    "risk_index": seg.risk_index,
-                    "k_effective": seg.k_effective,
-                    "state": seg.state,
-                    "color": seg.to_dict()["color"],
-                }
-            )
+            self.on_event(self._segment_update_payload(segment_id))
             self._push_log("planner", f"{segment_id}: {ticket.reason} (model: {ticket.model_label})")

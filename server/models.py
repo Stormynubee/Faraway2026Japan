@@ -19,6 +19,8 @@ class Segment:
     k_effective: float = 100.0
     state: str = "HEALTHY"
     force_anomaly: bool = False
+    vib_z: float = 0.0
+    az: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -29,6 +31,8 @@ class Segment:
             "color": STATE_COLORS.get(self.state, "#22c55e"),
             "rainfall": round(self.rainfall, 2),
             "soil_moisture": round(self.soil_moisture, 2),
+            "vib_z": round(self.vib_z, 2),
+            "az": round(self.az, 3),
         }
 
 

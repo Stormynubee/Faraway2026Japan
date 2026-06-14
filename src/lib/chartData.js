@@ -1,7 +1,7 @@
 const STITCH_MOISTURE_PATH =
   'M0 30 Q 10 20, 20 25 T 40 15 T 60 20 T 80 10 T 100 15'
 
-const STITCH_RAIN_HEIGHTS = [20, 40, 30, 60, 80, 50, 90, 30]
+const SEGMENT_ORDER = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6']
 
 export function moistureSparklinePath(values) {
   if (!values?.length) {
@@ -25,20 +25,41 @@ export function moistureSparklinePath(values) {
   return `M${points.join(' L')}`
 }
 
+/** Corridor rainfall bars from live segment data (S1–S6). */
 export function rainfallBarHeights(segments) {
-  const avg =
-    segments.length > 0
-      ? segments.reduce((a, s) => a + (s.rainfall ?? 0), 0) / segments.length
-      : 0.5
+  const ordered = SEGMENT_ORDER.map(
+    (id) => segments.find((s) => s.id === id) ?? { id, rainfall: 0 },
+  )
 
-  const heights = STITCH_RAIN_HEIGHTS.map((base, i) => {
-    const jitter = Math.sin(i * 1.7 + avg * 3) * 8
-    return Math.round(Math.min(95, Math.max(15, base + jitter)))
-  })
+  const heights = ordered.map((s) =>
+    Math.round(Math.min(95, Math.max(8, (s.rainfall ?? 0) * 100))),
+  )
 
   const peakIndex = heights.indexOf(Math.max(...heights))
 
-  return { heights, peakIndex }
+  return { heights, peakIndex, labels: ordered.map((s) => s.id) }
+}
+
+/** Soil vs rain correlation for a segment's history or corridor snapshot. */
+export function soilRainCorrelationData(segments, segmentHistory, focusId) {
+  const history = segmentHistory?.[focusId]
+  if (history?.moisture?.length && history?.rainfall?.length) {
+    const len = Math.min(history.moisture.length, history.rainfall.length)
+    const moisture = history.moisture.slice(-len)
+    const rainfall = history.rainfall.slice(-len)
+    const heights = rainfall.map((r) => Math.round(Math.min(90, Math.max(10, r * 100))))
+    const linePoints = moisture.map((m, i) => Math.round(Math.min(90, Math.max(10, m * 100))))
+    const peakIndex = heights.indexOf(Math.max(...heights))
+    return { heights, linePoints, peakIndex, labels: moisture.map((_, i) => `T${i + 1}`) }
+  }
+
+  const ordered = SEGMENT_ORDER.map(
+    (id) => segments.find((s) => s.id === id) ?? { id, rainfall: 0, soil_moisture: 0 },
+  )
+  const heights = ordered.map((s) => Math.round((s.rainfall ?? 0) * 100))
+  const linePoints = ordered.map((s) => Math.round((s.soil_moisture ?? 0) * 100))
+  const peakIndex = heights.indexOf(Math.max(...heights))
+  return { heights, linePoints, peakIndex, labels: ordered.map((s) => s.id) }
 }
 
 export function moistureSparklineFillPath(linePath) {

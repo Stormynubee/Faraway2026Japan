@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useRef } from 'react'
 import SegmentHudGrid from '../SegmentHudGrid'
 import MetricBar from '../MetricBar'
 import ClimatePanel from '../ClimatePanel'
@@ -13,12 +13,15 @@ export default function OverviewView({
   tickets,
   logs,
   activeRiskIndex,
+  segmentHistory,
   onSegmentClick,
 }) {
+  const sceneRef = useRef(null)
+
   return (
     <>
       <div className="main-primary">
-        <section className="panel corridor-matrix">
+        <section className="panel corridor-matrix panel-enter">
           <div className="panel-head">
             <h2>
               <span className="material-symbols-outlined panel-icon">ssid_chart</span>
@@ -29,13 +32,40 @@ export default function OverviewView({
             </span>
           </div>
 
+          <div className="viewport-toolbar">
+            <span className="model-label">
+              <span className="model-dot" /> MODEL: CORRIDOR_TRACK
+            </span>
+            <div className="viewport-controls">
+              <button
+                type="button"
+                aria-label="Zoom in"
+                onClick={() => sceneRef.current?.setZoom(-1)}
+              >
+                <span className="material-symbols-outlined">zoom_in</span>
+              </button>
+              <button
+                type="button"
+                aria-label="Reset view"
+                onClick={() => sceneRef.current?.resetView()}
+              >
+                <span className="material-symbols-outlined">center_focus_strong</span>
+              </button>
+            </div>
+          </div>
+
           <div className="matrix-viewport">
             <Suspense
               fallback={
                 <div className="track-scene bogie-loading">Loading corridor…</div>
               }
             >
-              <TrackScene segments={segments} trainSegmentId={train?.segment_id} />
+              <TrackScene
+                ref={sceneRef}
+                segments={segments}
+                train={train}
+                onSegmentClick={onSegmentClick}
+              />
             </Suspense>
             <SegmentHudGrid segments={segments} onSegmentClick={onSegmentClick} />
           </div>
@@ -45,9 +75,9 @@ export default function OverviewView({
           </div>
         </section>
 
-        <ClimatePanel segments={segments} />
+        <ClimatePanel segments={segments} segmentHistory={segmentHistory} />
 
-        <div id="controls-panel" className="panel controls-panel">
+        <div id="controls-panel" className="panel controls-panel panel-enter">
           <h2>
             <span className="material-symbols-outlined panel-icon">tune</span>
             INJECTION CONTROLS

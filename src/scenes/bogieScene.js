@@ -1,6 +1,12 @@
 import * as THREE from 'three'
+import { attachOrbitZoom } from './sceneControls.js'
 
-export function createBogieScene(container) {
+function hexToColor(hex) {
+  if (!hex) return 0xff3b30
+  return parseInt(hex.replace('#', ''), 16)
+}
+
+export function createBogieScene(container, { focusSegmentRef }) {
   const width = container.clientWidth
   const height = container.clientHeight
 
@@ -13,13 +19,17 @@ export function createBogieScene(container) {
 
   const group = new THREE.Group()
   const axleGeom = new THREE.CylinderGeometry(0.2, 0.2, 4, 32)
-  const axleMat = new THREE.MeshPhongMaterial({ color: 0x444444 })
+  const axleMat = new THREE.MeshPhongMaterial({ color: 0x666670 })
   const axle = new THREE.Mesh(axleGeom, axleMat)
   axle.rotation.z = Math.PI / 2
   group.add(axle)
 
   const wheelGeom = new THREE.TorusGeometry(1, 0.2, 16, 100)
-  const wheelMat = new THREE.MeshPhongMaterial({ color: 0xff3b30 })
+  const wheelMat = new THREE.MeshPhongMaterial({
+    color: 0xff3b30,
+    emissive: 0x551111,
+    emissiveIntensity: 0.4,
+  })
   const wheel1 = new THREE.Mesh(wheelGeom, wheelMat)
   wheel1.position.x = -1.5
   const wheel2 = new THREE.Mesh(wheelGeom, wheelMat)
@@ -28,13 +38,23 @@ export function createBogieScene(container) {
 
   scene.add(group)
 
-  const light = new THREE.DirectionalLight(0xffffff, 1)
-  light.position.set(0, 10, 10)
-  scene.add(light)
-  scene.add(new THREE.AmbientLight(0x222222))
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x222233, 0.9))
+  const rim = new THREE.DirectionalLight(0xffb4aa, 0.6)
+  rim.position.set(-3, 5, 2)
+  scene.add(rim)
+  const key = new THREE.DirectionalLight(0xffffff, 1.0)
+  key.position.set(0, 10, 10)
+  scene.add(key)
+  scene.add(new THREE.AmbientLight(0x404050, 0.4))
 
   let targetZoom = 5
   camera.position.z = targetZoom
+
+  const controls = attachOrbitZoom(container, camera, new THREE.Vector3(0, 0, 0), {
+    minZoom: 3,
+    maxZoom: 10,
+    initialZoom: 5,
+  })
 
   let frameId = 0
   let disposed = false
@@ -45,9 +65,16 @@ export function createBogieScene(container) {
 
     group.rotation.y += 0.004
     group.rotation.x += 0.002
+    controls.update(group)
 
-    camera.position.z += (targetZoom - camera.position.z) * 0.05
-    camera.lookAt(0, 0, 0)
+    const focus = focusSegmentRef?.current
+    if (focus) {
+      const risk = focus.risk_index ?? 0
+      const color = hexToColor(focus.color)
+      wheelMat.color.setHex(color)
+      wheelMat.emissive.setHex(color >> 3)
+      wheelMat.emissiveIntensity = 0.3 + risk * 0.5
+    }
 
     renderer.render(scene, camera)
   }
@@ -65,6 +92,7 @@ export function createBogieScene(container) {
   const dispose = () => {
     disposed = true
     cancelAnimationFrame(frameId)
+    controls.dispose()
     window.removeEventListener('resize', onResize)
     renderer.dispose()
     if (renderer.domElement.parentNode === container) {
@@ -73,11 +101,11 @@ export function createBogieScene(container) {
   }
 
   const setZoom = (delta) => {
-    targetZoom = Math.min(10, Math.max(3, targetZoom + delta))
+    controls.setZoom(delta)
   }
 
   const resetView = () => {
-    targetZoom = 5
+    controls.resetView()
     group.rotation.set(0, 0, 0)
   }
 

@@ -1,14 +1,12 @@
 import { rainfallBarHeights } from '../../lib/chartData.js'
 
-const OPACITY_CLASSES = [
-  'rain-opacity-30',
-  'rain-opacity-30',
-  'rain-opacity-30',
-  'rain-opacity-30',
-  'rain-opacity-50',
-  'rain-opacity-80',
-  'rain-opacity-100',
-  'rain-opacity-50',
+const DIM_CLASSES = [
+  'rain-bar-dim',
+  'rain-bar-dim',
+  'rain-bar-mid',
+  'rain-bar-mid',
+  'rain-bar-bright',
+  'rain-bar-bright',
 ]
 
 export default function RainfallBars({ segments }) {
@@ -19,7 +17,7 @@ export default function RainfallBars({ segments }) {
       {heights.map((h, i) => (
         <div
           key={i}
-          className={`rain-bar ${OPACITY_CLASSES[i] ?? 'rain-opacity-30'} ${i === peakIndex ? 'rain-peak' : ''}`}
+          className={`rain-bar ${DIM_CLASSES[i] ?? 'rain-bar-dim'} ${i === peakIndex ? 'rain-peak' : ''}`}
           style={{ height: `${h}%` }}
         >
           {i === peakIndex && <span className="rain-peak-dot" />}

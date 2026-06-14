@@ -1,18 +1,47 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useWebSocket } from './hooks/useWebSocket'
 import Sidebar from './components/Sidebar'
 import TopBar from './components/TopBar'
+import StationMapModal from './components/StationMapModal'
 import OverviewView from './components/views/OverviewView'
 import AnalysisView from './components/views/AnalysisView'
 import MaintenanceView from './components/views/MaintenanceView'
 import ClimateView from './components/views/ClimateView'
+import { highestRiskSegment } from './lib/segmentUtils.js'
+
+function formatUptime(seconds) {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  if (h > 0) return `${h}h ${m}m`
+  if (m > 0) return `${m}m ${s}s`
+  return `${s}s`
+}
 
 export default function App() {
-  const { connected, segments, train, tickets, logs, activeRiskIndex } =
-    useWebSocket()
+  const {
+    connected,
+    segments,
+    train,
+    tickets,
+    logs,
+    activeRiskIndex,
+    segmentHistory,
+  } = useWebSocket()
 
   const [view, setView] = useState('overview')
   const [selectedSegmentId, setSelectedSegmentId] = useState('S3')
+  const [stationMapOpen, setStationMapOpen] = useState(false)
+  const [uptimeSec, setUptimeSec] = useState(0)
+  const [sessionStart] = useState(() => Date.now())
+
+  useEffect(() => {
+    if (!connected) return
+    const id = setInterval(() => {
+      setUptimeSec(Math.floor((Date.now() - sessionStart) / 1000))
+    }, 1000)
+    return () => clearInterval(id)
+  }, [connected, sessionStart])
 
   const handleScan = async () => {
     try {
@@ -35,6 +64,19 @@ export default function App() {
     setView('analysis')
   }
 
+  const goMaintenance = useCallback(() => {
+    setView('maintenance')
+    requestAnimationFrame(() => {
+      document.getElementById('network-logs')?.scrollIntoView({ behavior: 'smooth' })
+    })
+  }, [])
+
+  const openTickets = tickets.filter((t) => t.status !== 'closed').length
+  const footerSegment =
+    train?.segment_id ?? highestRiskSegment(segments)?.id ?? '—'
+  const uptimeLabel = connected ? formatUptime(uptimeSec) : '—'
+  const agentLabel = connected ? 'NOMINAL' : 'RECONNECTING'
+
   return (
     <div className="shell">
       <div className="scanline" aria-hidden="true" />
@@ -46,7 +88,11 @@ export default function App() {
       />
 
       <div className="workspace">
-        <TopBar connected={connected} />
+        <TopBar
+          connected={connected}
+          openTicketCount={openTickets}
+          onNavigateMaintenance={goMaintenance}
+        />
 
         <main className={`main-grid ${view !== 'overview' ? 'main-grid-single' : ''}`}>
           {view === 'overview' && (
@@ -56,6 +102,7 @@ export default function App() {
               tickets={tickets}
               logs={logs}
               activeRiskIndex={activeRiskIndex}
+              segmentHistory={segmentHistory}
               onSegmentClick={handleSegmentClick}
             />
           )}
@@ -64,8 +111,10 @@ export default function App() {
               segments={segments}
               activeRiskIndex={activeRiskIndex}
               logs={logs}
+              segmentHistory={segmentHistory}
               selectedSegmentId={selectedSegmentId}
               onSelectSegment={setSelectedSegmentId}
+              onNavigateMaintenance={goMaintenance}
             />
           )}
           {view === 'maintenance' && (
@@ -77,17 +126,35 @@ export default function App() {
         <footer className="app-footer">
           <span>
             <span className="footer-dot" />
-            UPTIME: 99.98% | AGENT: NOMINAL | SEGMENT: A-104
+            UPTIME: {uptimeLabel} | AGENT: {agentLabel} | SEGMENT: {footerSegment}
           </span>
           <span className="footer-links">
-            <a href="#station">STATION_MAP</a>
+            <button type="button" className="footer-link" onClick={() => setStationMapOpen(true)}>
+              STATION_MAP
+            </button>
             <span className="footer-sep">|</span>
-            <a href="#logs">NETWORK_LOGS</a>
+            <button type="button" className="footer-link" onClick={goMaintenance}>
+              NETWORK_LOGS
+            </button>
             <span className="footer-sep">|</span>
-            <a href="#sop">SOP_DOCS</a>
+            <a
+              className="footer-link"
+              href="/sop.md"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              SOP_DOCS
+            </a>
           </span>
         </footer>
       </div>
+
+      <StationMapModal
+        open={stationMapOpen}
+        onClose={() => setStationMapOpen(false)}
+        segments={segments}
+        train={train}
+      />
     </div>
   )
 }

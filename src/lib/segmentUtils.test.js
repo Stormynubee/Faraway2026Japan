@@ -4,6 +4,7 @@ import {
   isCritical,
   highestRiskSegment,
   computeMetrics,
+  segmentCoordinates,
 } from './segmentUtils.js'
 
 describe('segmentLabel', () => {
@@ -44,11 +45,24 @@ describe('highestRiskSegment', () => {
   })
 })
 
+describe('segmentCoordinates', () => {
+  it('returns deterministic lat/lon per segment', () => {
+    const c = segmentCoordinates('S3')
+    expect(c.lat).toBe('45.9581')
+    expect(c.lon).toBe('12.8733')
+  })
+})
+
 describe('computeMetrics', () => {
-  it('derives peak amplitude, fatigue, and bearing temp from risk', () => {
-    const m = computeMetrics([{ risk_index: 0.5 }], 0.5)
-    expect(m.peakAmplitude).toBeCloseTo(1.1, 1)
+  it('derives metrics from focus segment vib_z and risk', () => {
+    const m = computeMetrics(
+      [{ id: 'S4', risk_index: 0.5, vib_z: 2.5, az: 1.2 }],
+      0.5,
+      { id: 'S4', risk_index: 0.5, vib_z: 2.5, az: 1.2 },
+    )
+    expect(m.peakAmplitude).toBe(1.2)
     expect(m.fatigueIndex).toBe(50)
     expect(m.bearingTemp).toBeCloseTo(44, 0)
+    expect(m.liveFrequency).toBe(52)
   })
 })

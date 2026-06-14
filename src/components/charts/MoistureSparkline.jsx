@@ -2,12 +2,19 @@ import {
   moistureSparklinePath,
   moistureSparklineFillPath,
 } from '../../lib/chartData.js'
+import { highestRiskSegment } from '../../lib/segmentUtils.js'
 
-export default function MoistureSparkline({ segments }) {
+export default function MoistureSparkline({ segments, segmentHistory }) {
+  const focusId =
+    highestRiskSegment(segments)?.id ?? segments[0]?.id ?? 'S1'
+  const history = segmentHistory?.[focusId]?.moisture
+
   const values =
-    segments.length > 0
-      ? segments.map((s) => s.soil_moisture ?? 0)
-      : [0.3, 0.5, 0.42, 0.55, 0.48, 0.6, 0.52, 0.45]
+    history?.length > 1
+      ? history
+      : segments.length > 0
+        ? segments.map((s) => s.soil_moisture ?? 0)
+        : []
 
   const linePath = moistureSparklinePath(values)
   const fillPath = moistureSparklineFillPath(linePath)

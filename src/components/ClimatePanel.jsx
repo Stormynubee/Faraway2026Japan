@@ -6,7 +6,7 @@ function avg(segments, key) {
   return segments.reduce((a, s) => a + (s[key] ?? 0), 0) / segments.length
 }
 
-export default function ClimatePanel({ segments }) {
+export default function ClimatePanel({ segments, segmentHistory }) {
   const moisture = avg(segments, 'soil_moisture') * 100
   const rain = avg(segments, 'rainfall') * 100
 
@@ -20,7 +20,7 @@ export default function ClimatePanel({ segments }) {
           </div>
           <span className="material-symbols-outlined climate-icon">water_drop</span>
         </div>
-        <MoistureSparkline segments={segments} />
+        <MoistureSparkline segments={segments} segmentHistory={segmentHistory} />
       </div>
 
       <div className="panel climate-card">
