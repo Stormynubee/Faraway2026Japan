@@ -24,37 +24,78 @@ The following diagram illustrates the flow of simulated telemetry data through t
 
 ```mermaid
 flowchart LR
-  subgraph sim [Simulation Loop]
-    Train[TrainPosition]
-    Segments[S1 to S6]
-  end
-  subgraph agents [Multi-Agent Analysis]
-    Hydro[HydrologyAgent]
-    Vib[VibrationAgent]
-    ML[RiskModel sklearn]
-    Plan[PlannerAgent]
-  end
-  subgraph api [FastAPI Gateway]
-    WS[WebSocket Hub]
-    REST[REST Inject]
-  end
-  subgraph ui [Vite React Dashboard]
-    Map[TrackMap SVG]
-    Gauge[RiskGauge CSS]
-    Ctrl[ControlPanel]
-    Queue[MaintenanceQueue]
-  end
-  Train --> Vib
-  Segments --> Hydro
-  Hydro --> Plan
-  Vib --> ML
-  Hydro --> ML
-  ML --> Plan
-  sim --> WS
-  agents --> WS
-  WS --> ui
-  REST --> sim
-  Ctrl --> REST
+    %% Subgraph Definitions
+    subgraph UI_IN [Dashboard Controller]
+        Ctrl[Control Panel]
+    end
+
+    subgraph API_IN [REST Gateway]
+        REST[REST Inject Endpoint]
+    end
+
+    subgraph SIM [Simulation Loop]
+        Train[Train Position]
+        Segments[S1 to S6]
+    end
+
+    subgraph AGENTS [Multi-Agent Analysis]
+        Hydro[Hydrology Agent]
+        Vib[Vibration Agent]
+        ML[ML Risk Classifier]
+        Plan[Planner Agent]
+    end
+
+    subgraph API_OUT [WebSocket Gateway]
+        WS[WebSocket Hub]
+    end
+
+    subgraph UI_OUT [Dashboard Display]
+        Map[TrackMap SVG]
+        Gauge[RiskGauge CSS]
+        Queue[Maintenance Queue]
+    end
+
+    %% Wiring / Data Flow Connections
+    Ctrl -->|POST /inject| REST
+    REST -->|Force Anomaly| Segments
+    
+    Segments -->|Moisture & Rain| Hydro
+    Train -->|z-Acceleration| Vib
+    
+    Hydro -->|Stiffness Index| ML
+    Vib -->|Rolling z-Score| ML
+    
+    Hydro -->|Wetness Report| Plan
+    ML -->|Risk Tier Prediction| Plan
+    
+    Train -->|Train Position| WS
+    Segments -->|Segment Stiffness| WS
+    Plan -->|Maintenance Ticket| WS
+    
+    WS -->|Live Telemetry| Map
+    WS -->|Active Risk Index| Gauge
+    WS -->|Work Tickets| Queue
+
+    %% Stylized Color Customizations
+    style UI_IN fill:#0e1014,stroke:#232630,stroke-width:2px,color:#ffffff
+    style API_IN fill:#151720,stroke:#232630,stroke-width:2px,color:#ffffff
+    style SIM fill:#0e1014,stroke:#ff5545,stroke-width:2px,stroke-dasharray:5 5,color:#ffffff
+    style AGENTS fill:#151720,stroke:#ff5545,stroke-width:2px,color:#ffffff
+    style API_OUT fill:#151720,stroke:#232630,stroke-width:2px,color:#ffffff
+    style UI_OUT fill:#0e1014,stroke:#232630,stroke-width:2px,color:#ffffff
+
+    style Ctrl fill:#232630,stroke:#9098a8,color:#ffffff
+    style REST fill:#232630,stroke:#9098a8,color:#ffffff
+    style Train fill:#232630,stroke:#9098a8,color:#ffffff
+    style Segments fill:#232630,stroke:#9098a8,color:#ffffff
+    style Hydro fill:#232630,stroke:#9098a8,color:#ffffff
+    style Vib fill:#232630,stroke:#9098a8,color:#ffffff
+    style ML fill:#232630,stroke:#9098a8,color:#ffffff
+    style Plan fill:#232630,stroke:#9098a8,color:#ffffff
+    style WS fill:#ff5545,stroke:#ffffff,color:#ffffff
+    style Map fill:#232630,stroke:#9098a8,color:#ffffff
+    style Gauge fill:#232630,stroke:#9098a8,color:#ffffff
+    style Queue fill:#232630,stroke:#9098a8,color:#ffffff
 ```
 
 ---
