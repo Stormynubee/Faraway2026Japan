@@ -1,10 +1,19 @@
 import asyncio
+import os
 from contextlib import asynccontextmanager
 from typing import Any
 
 from server.env import load_dotenv
 
 load_dotenv()
+
+
+def parse_allowed_origins(value: str | None = None) -> list[str]:
+    raw = value if value is not None else os.environ.get(
+        "ALLOWED_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    )
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -55,7 +64,7 @@ app = FastAPI(title="Bogie Flow", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=parse_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -77,9 +86,18 @@ class GuideChatRequest(BaseModel):
     history: list[dict[str, str]] = Field(default_factory=list)
 
 
+def health_payload() -> dict[str, Any]:
+    return {"status": "ok", "service": "bogie-flow", "segments": 6}
+
+
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "bogie-flow"}
+    return health_payload()
+
+
+@app.get("/api/health")
+def api_health():
+    return health_payload()
 
 
 @app.post("/api/inject/monsoon")

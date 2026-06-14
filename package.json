@@ -1,6 +1,6 @@
 {
   "name": "@stormynubee/bogie-flow-dashboard",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Vite-React dashboard UI for Bogie Flow track-bed monitoring system",
   "type": "module",
   "main": "./dist/index.html",
