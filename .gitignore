@@ -21,3 +21,4 @@ bogie_flow.egg-info/
 
 
 .vercel
+.env*.local

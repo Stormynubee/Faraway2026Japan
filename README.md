@@ -13,6 +13,12 @@
 </p>
 
 <p align="center">
+  <a href="https://bogieflow.vercel.app"><strong>▶ Live Demo</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/Stormynubee/Faraway2026Japan/releases">Releases</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/Stormynubee/Faraway2026Japan/actions/workflows/ci.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/Stormynubee/Faraway2026Japan/ci.yml?branch=main&label=CI&style=flat-square&color=f4f3ee&labelColor=0a0a0b&logo=github-actions&logoColor=ffffff" alt="CI Status" />
   </a>
@@ -37,7 +43,7 @@
   <a href="https://nodejs.org/">
     <img src="https://img.shields.io/badge/Node-20.x-f4f3ee?style=flat-square&labelColor=0a0a0b&logo=node.js&logoColor=ffffff" alt="Node 20" />
   </a>
-  <a href="https://faraway-2026-japan.vercel.app">
+  <a href="https://bogieflow.vercel.app">
     <img src="https://img.shields.io/badge/Vercel-Deployed-f4f3ee?style=flat-square&labelColor=0a0a0b&logo=vercel&logoColor=ffffff" alt="Vercel Deployment" />
   </a>
   <img src="https://img.shields.io/badge/FAR%20AWAY%202026-Railways-e9482e?style=flat-square&labelColor=0a0a0b" alt="FAR AWAY 2026 Theme" />
@@ -80,7 +86,7 @@ Monsoon rains saturate railway ballast, leading to loss of stiffness, subgrade e
 | **Avoided-Failure Forecasting** | Projects risk index 30 minutes ahead using step trends, exposing time-to-critical ETAs and ranked segment inspection priorities. | Verified |
 | **Live Weather Toggle** | Fuses live Open-Meteo API data per segment coordinates with a 10-minute cache, falling back to simulation parameters cleanly. | Verified |
 | **Explainable AI (XAI)** | Interrogates Gradient Boosting model feature importances and pulls plain-language rationales (Gemini API with offline local fallback templates). | Verified |
-| **Scenario Replay & Demo** | Playbacks for Monsoon sweeps, bearing faults, or resets, supporting a `?demo` URL parameter for autoplay. | Verified |
+| **Scenario Replay & Demo** | Playbacks for Monsoon sweeps, bearing faults, or resets; client-side demo fallback when no backend WebSocket. | Verified (demo on Vercel; live REST when backend connected) |
 | **Interactive Tour Coach** | Step-by-step tour guides and chatbot to explain telemetry anomalies. | Verified |
 
 ---
@@ -251,9 +257,11 @@ Deployment configurations are included in:
 - [vercel.json](vercel.json) (Vercel SPA routing settings)
 
 ### Vercel Deployment (Frontend UI)
-The Vite React frontend is optimized for deployment on Vercel as a high-performance static site.
-- **Production URL**: [https://faraway-2026-japan.vercel.app](https://faraway-2026-japan.vercel.app)
-- **Environment Variables**: Configure `VITE_API_BASE` and `VITE_WS_BASE` in the Vercel Dashboard to point to your hosted FastAPI backend (e.g. Render/Railway) to enable live telemetry data sync.
+The Vite React frontend is deployed on Vercel as a static SPA with **client-side demo simulation** when no backend is reachable.
+
+- **Production URL**: [https://bogieflow.vercel.app](https://bogieflow.vercel.app) (alias: [faraway-2026-japan.vercel.app](https://faraway-2026-japan.vercel.app))
+- **Demo mode**: Without a hosted FastAPI backend, the dashboard runs a local telemetry simulation (header shows **Demo**, field sensors show **Simulated** ingest).
+- **Full stack**: Configure `VITE_API_BASE` and `VITE_WS_BASE` in the [Vercel project settings](https://vercel.com/priyank-tiwaris-projects-91cadde5/faraway-2026-japan/settings/environment-variables) to point at your Render/Railway/Docker backend for live WebSocket telemetry.
 
 ---
 

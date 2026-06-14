@@ -135,7 +135,7 @@ export default function OverviewView({
                   <SensorStackPanel
                     segments={segments}
                     activeRiskIndex={activeRiskIndex}
-                    connected={connected}
+                    connected={realConnected}
                     variant="deck"
                   />
                 </div>

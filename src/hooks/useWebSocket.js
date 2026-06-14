@@ -101,7 +101,6 @@ export function useWebSocket() {
     ws.onclose = () => {
       const closed = onSocketClose({
         reconnectAttempts: reconnectAttemptsRef.current,
-        connected: true,
       })
       reconnectAttemptsRef.current = closed.reconnectAttempts
       setReconnectAttempts(closed.reconnectAttempts)
@@ -389,7 +388,7 @@ export function useWebSocket() {
 
 
   return {
-    connected: true,
+    connected: realConnected,
     realConnected,
     reconnectAttempts,
     segments,

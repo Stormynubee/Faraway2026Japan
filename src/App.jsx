@@ -11,7 +11,6 @@ import AnalysisView from './components/views/AnalysisView'
 import MaintenanceView from './components/views/MaintenanceView'
 import ClimateView from './components/views/ClimateView'
 import BootLoader from './components/BootLoader'
-import ReconnectBanner from './components/ReconnectBanner'
 import ToastStack from './components/ToastStack'
 import { highestRiskSegment } from './lib/segmentUtils.js'
 import { injectMonsoon } from './lib/api.js'
@@ -53,7 +52,7 @@ export default function App() {
   } = useWebSocket()
 
   const { toasts, push: pushToast } = useToast()
-  useDemoScenario({ connected, onToast: pushToast })
+  useDemoScenario({ connected: realConnected, onToast: pushToast })
   const prevTicketsRef = useRef([])
   const reduced = usePrefersReducedMotion()
 
@@ -65,12 +64,12 @@ export default function App() {
   const [sessionStart] = useState(() => Date.now())
 
   useEffect(() => {
-    if (!connected) return
+    if (!dataReady) return
     const id = setInterval(() => {
       setUptimeSec(Math.floor((Date.now() - sessionStart) / 1000))
     }, 1000)
     return () => clearInterval(id)
-  }, [connected, sessionStart])
+  }, [dataReady, sessionStart])
 
   useEffect(() => {
     const prev = prevTicketsRef.current
@@ -114,8 +113,8 @@ export default function App() {
   const openTickets = tickets.filter((t) => t.status !== 'closed').length
   const footerSegment =
     train?.segment_id ?? highestRiskSegment(segments)?.id ?? '—'
-  const uptimeLabel = connected ? formatUptime(uptimeSec) : '—'
-  const agentLabel = connected ? UI.footer.agentOk : 'Offline'
+  const uptimeLabel = dataReady ? formatUptime(uptimeSec) : '—'
+  const agentLabel = connected ? UI.footer.agentOk : 'Demo simulation'
 
   const handleBootComplete = useCallback(() => setBooted(true), [])
 
@@ -129,10 +128,11 @@ export default function App() {
       }
 
   const tickerItems = [
-    connected && { label: 'SEG', value: footerSegment },
-    connected && { label: 'RISK', value: `${Math.round((activeRiskIndex ?? 0) * 100)}%` },
-    connected && { label: 'UPTIME', value: uptimeLabel },
-    connected && openTickets > 0 && { label: 'TICKETS', value: String(openTickets) },
+    dataReady && { label: 'SEG', value: footerSegment },
+    dataReady && { label: 'RISK', value: `${Math.round((activeRiskIndex ?? 0) * 100)}%` },
+    dataReady && { label: 'UPTIME', value: uptimeLabel },
+    dataReady && openTickets > 0 && { label: 'TICKETS', value: String(openTickets) },
+    !connected && dataReady && { label: 'MODE', value: 'Demo' },
   ].filter(Boolean)
 
   if (!booted) {
