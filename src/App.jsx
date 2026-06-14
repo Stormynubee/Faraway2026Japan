@@ -79,8 +79,10 @@ export default function App() {
   const uptimeLabel = connected ? formatUptime(uptimeSec) : '—'
   const agentLabel = connected ? 'NOMINAL' : 'RECONNECTING'
 
+  const handleBootComplete = useCallback(() => setBooted(true), [])
+
   if (!booted) {
-    return <BootLoader onComplete={() => setBooted(true)} />
+    return <BootLoader onComplete={handleBootComplete} />
   }
 
   return (

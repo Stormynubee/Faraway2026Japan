@@ -1,98 +1,111 @@
 import { useState, useEffect, useRef } from 'react'
 
 const BOOT_MS = 4000
-const EXIT_MS = 380
+const FADE_MS = 420
 
-const LOG_LINES = [
-  { at: 0, text: 'corridor link · connecting' },
-  { at: 420, text: 'track geometry · ready' },
-  { at: 880, text: 'bogie assembly · ready' },
-  { at: 1360, text: 'segments S1–S6 · idle' },
-  { at: 2000, text: 'telemetry stream · live' },
-  { at: 2800, text: 'handoff to dashboard' },
+const STEPS = [
+  { at: 0, id: 'link', label: 'Corridor link', detail: 'Opening telemetry bridge' },
+  { at: 520, id: 'track', label: 'Track model', detail: 'Geometry compiled' },
+  { at: 1040, id: 'bogie', label: 'Bogie assembly', detail: 'Wheel pair mounted' },
+  { at: 1560, id: 'segments', label: 'Segments S1–S6', detail: 'Baseline nominal' },
+  { at: 2200, id: 'stream', label: 'Live stream', detail: 'Awaiting train packets' },
+  { at: 3000, id: 'handoff', label: 'Dashboard', detail: 'Loading overview' },
 ]
 
 export default function BootLoader({ onComplete }) {
-  const [lines, setLines] = useState([])
+  const onCompleteRef = useRef(onComplete)
+  onCompleteRef.current = onComplete
+
+  const [activeStep, setActiveStep] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [exiting, setExiting] = useState(false)
-  const finishedRef = useRef(false)
+  const [phase, setPhase] = useState('boot')
 
   useEffect(() => {
-    const logTimers = LOG_LINES.map(({ at, text }) =>
-      setTimeout(() => setLines((prev) => [...prev, text]), at),
+    const timers = STEPS.map(({ at }, index) =>
+      window.setTimeout(() => setActiveStep(index + 1), at),
     )
 
-    const start = performance.now()
-    let frameId = 0
-
-    const tick = (now) => {
-      const pct = Math.min(100, ((now - start) / BOOT_MS) * 100)
+    const started = Date.now()
+    const progressTimer = window.setInterval(() => {
+      const pct = Math.min(100, ((Date.now() - started) / BOOT_MS) * 100)
       setProgress(pct)
+    }, 40)
 
-      if (pct < 100) {
-        frameId = requestAnimationFrame(tick)
-        return
-      }
-
-      if (finishedRef.current) return
-      finishedRef.current = true
-
-      window.setTimeout(() => {
-        setExiting(true)
-        window.setTimeout(onComplete, EXIT_MS)
-      }, 280)
-    }
-
-    frameId = requestAnimationFrame(tick)
+    const finishTimer = window.setTimeout(() => {
+      setProgress(100)
+      setActiveStep(STEPS.length)
+      setPhase('exit')
+      window.setTimeout(() => onCompleteRef.current?.(), FADE_MS)
+    }, BOOT_MS)
 
     return () => {
-      logTimers.forEach(clearTimeout)
-      cancelAnimationFrame(frameId)
+      timers.forEach(clearTimeout)
+      clearInterval(progressTimer)
+      clearTimeout(finishTimer)
     }
-  }, [onComplete])
+  }, [])
 
-  const statusLabel =
-    exiting ? 'Entering…' : progress >= 100 ? 'Ready' : 'Starting'
+  const statusText =
+    phase === 'exit'
+      ? 'Opening dashboard'
+      : progress >= 95
+        ? 'Almost there'
+        : 'Starting corridor systems'
 
   return (
     <div
-      className={`boot-overlay ${exiting ? 'boot-overlay-out' : ''}`}
+      className={`boot-screen ${phase === 'exit' ? 'boot-screen-out' : ''}`}
       role="status"
       aria-live="polite"
       aria-label="Loading Bogie Flow"
     >
-      <div className="boot-shell">
-        <header className="boot-brand">
-          <span className="boot-mark" aria-hidden="true" />
-          <div>
+      <div className="boot-layout">
+        <section className="boot-intro">
+          <span className="boot-accent" aria-hidden="true" />
+          <div className="boot-intro-copy">
+            <p className="boot-kicker">Climate-aware rail analytics</p>
             <h1 className="boot-title">Bogie Flow</h1>
-            <p className="boot-tagline">Ballast-first corridor monitoring</p>
+            <p className="boot-tagline">
+              Others monitor the rail.
+              <br />
+              We monitor the ballast.
+            </p>
           </div>
-        </header>
+        </section>
 
-        <div className="boot-terminal" aria-label="Startup log">
-          <ul className="boot-log-list">
-            {lines.map((line, i) => (
-              <li key={`${line}-${i}`} className="boot-log-item">
-                {line}
-              </li>
-            ))}
-            {!exiting && progress < 100 && (
-              <li className="boot-log-item boot-log-cursor" aria-hidden="true">
-                ▋
-              </li>
-            )}
-          </ul>
-        </div>
-
-        <footer className="boot-foot">
-          <div className="boot-progress-track" aria-hidden="true">
-            <div className="boot-progress-fill" style={{ width: `${progress}%` }} />
-          </div>
-          <span className="boot-status">{statusLabel}</span>
-        </footer>
+        <section className="boot-steps-panel" aria-label="Startup progress">
+          <ol className="boot-steps">
+            {STEPS.map((step, index) => {
+              const done = index < activeStep
+              const current = index === activeStep && phase === 'boot'
+              return (
+                <li
+                  key={step.id}
+                  className={`boot-step ${done ? 'boot-step-done' : ''} ${current ? 'boot-step-active' : ''}`}
+                >
+                  <span className="boot-step-marker" aria-hidden="true">
+                    {done ? '✓' : current ? '●' : '○'}
+                  </span>
+                  <span className="boot-step-body">
+                    <span className="boot-step-label">{step.label}</span>
+                    <span className="boot-step-detail">{step.detail}</span>
+                  </span>
+                </li>
+              )
+            })}
+          </ol>
+        </section>
       </div>
+
+      <footer className="boot-bar">
+        <div className="boot-bar-track" aria-hidden="true">
+          <div className="boot-bar-fill" style={{ width: `${progress}%` }} />
+        </div>
+        <div className="boot-bar-meta">
+          <span className="boot-bar-status">{statusText}</span>
+          <span className="boot-bar-pct">{Math.round(progress)}%</span>
+        </div>
+      </footer>
     </div>
   )
 }
