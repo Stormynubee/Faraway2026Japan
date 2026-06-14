@@ -33,13 +33,15 @@ Track-bed **mud pumping / ballast fouling** during monsoon degrades stiffness \(
 git clone https://github.com/Stormynubee/Faraway2026Japan.git
 cd Faraway2026Japan
 python -m pip install -r requirements.txt
-python -m server.agents.train_risk_model
-python -m uvicorn server.main:app --reload --port 8000
-# new terminal:
-npm install && npm run dev
+npm install
+npm run dev:all
 ```
 
-Open http://localhost:5173 → Inject Severe Monsoon on S4.
+Open http://localhost:5173 → **Heavy rain · S4** (`inject-monsoon-s4`) → Maintenance → **Explain** on P1 ticket → Overview **Impact** / **Forecast** panels.
+
+Production single-URL: `npm run build && npm start` → http://localhost:8000
+
+Docker: `docker build -t bogie-flow . && docker run -p 8000:8000 -e PORT=8000 bogie-flow`
 
 ---
 
@@ -47,12 +49,12 @@ Open http://localhost:5173 → Inject Severe Monsoon on S4.
 
 | Criterion | Evidence |
 |-----------|----------|
-| Innovation & technical depth | Hydrology + vibration + ML fusion; [physics.md](physics.md) |
-| Engineering quality | Typed WS schema, pytest suite, modular agents, joblib artifact |
-| Real-world impact | Monsoon track-bed failure; maintenance prioritization |
-| Scalability | N-segment model; fleet ingest notes below |
-| Design & UX | Risk gauge, corridor map, tagline, ticket queue |
-| Execution quality | Demo video + passing tests + runnable README |
+| Innovation & technical depth | Hydrology + vibration + ML fusion; **30-min risk forecast agent**; **Open-Meteo live weather** with sim fallback; **XAI ticket Explain** (factors + GB importances + Gemini/local rationale) |
+| Engineering quality | Typed WS schema, **42 pytest** + **60 vitest**, modular agents, Docker + CI smoke, single-origin static serving |
+| Real-world impact | Monsoon track-bed failure; **Quantified Impact panel** (prevented-cost estimates, inspection hours saved, derailment-risk reduction %) |
+| Scalability | N-segment model; fleet ingest notes below; containerized deploy |
+| Design & UX | Control-room UI, corridor scrub, risk gauge, scenario replay menu |
+| Execution quality | **One-command dev** (`npm run dev:all`), **<10 min clone**, demo script with exact clicks, public URL via Render/Railway |
 
 ---
 

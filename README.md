@@ -7,7 +7,7 @@
 Climate-aware track-bed risk evaluation and agent-based telemetry fusion for railways.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Stormynubee/Faraway2026Japan/ci.yml?branch=main&label=CI&style=flat-square&color=ff5545&labelColor=0c0d12&logo=github-actions&logoColor=ffffff)](https://github.com/Stormynubee/Faraway2026Japan/actions/workflows/ci.yml)
-[![Pytest](https://img.shields.io/badge/Pytest-35%20passing-ff5545?style=flat-square&labelColor=0c0d12&logo=pytest&logoColor=ffffff)](https://github.com/Stormynubee/Faraway2026Japan/blob/main/tests/)
+[![Pytest](https://img.shields.io/badge/Pytest-42%20passing-ff5545?style=flat-square&labelColor=0c0d12&logo=pytest&logoColor=ffffff)](https://github.com/Stormynubee/Faraway2026Japan/blob/main/tests/)
 [![Vitest](https://img.shields.io/badge/Vitest-60%20passing-ff5545?style=flat-square&labelColor=0c0d12&logo=vitest&logoColor=ffffff)](https://github.com/Stormynubee/Faraway2026Japan/blob/main/src/lib/)
 [![Release](https://img.shields.io/github/v/release/Stormynubee/Faraway2026Japan?label=Release&style=flat-square&color=ff5545&labelColor=0c0d12&logo=github&logoColor=ffffff)](https://github.com/Stormynubee/Faraway2026Japan/releases)
 [![License](https://img.shields.io/badge/License-MIT-ff5545?style=flat-square&labelColor=0c0d12&logo=open-source-initiative&logoColor=ffffff)](https://github.com/Stormynubee/Faraway2026Japan/blob/main/LICENSE)
@@ -239,31 +239,55 @@ The WebSocket server broadcasts updates to frontend clients. Messages conform to
 - Python 3.11 or higher
 - Node.js 20 or higher
 
-### Backend Setup
-1. Install Python package dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. Train the Gradient Boosting risk classifier model (requires `scikit-learn==1.8.0` as pinned in `requirements.txt`):
-   ```bash
-   python -m server.agents.train_risk_model
-   ```
-   Re-run this command after upgrading scikit-learn or changing feature engineering in `risk_model.py`.
-3. Start the FastAPI development server:
-   ```bash
-   python -m uvicorn server.main:app --reload --port 8000
-   ```
+### Fresh clone (< 10 minutes)
 
-### Frontend Setup
-1. Install node dependencies:
-   ```bash
-   npm install
-   ```
-2. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-3. Open `http://localhost:5173` in your web browser.
+```bash
+git clone https://github.com/Stormynubee/Faraway2026Japan.git
+cd Faraway2026Japan
+python -m pip install -r requirements.txt
+npm install
+npm run dev:all
+```
+
+Open **http://localhost:5173** — Vite proxies `/api` and `/ws` to FastAPI on port 8000.
+
+Alternative: `make dev` (same as `npm run dev:all`).
+
+The risk model (`risk_model.joblib`) trains automatically on first API boot if missing. To train manually:
+
+```bash
+python -m server.agents.train_risk_model
+```
+
+### Production single-URL (local)
+
+```bash
+npm run build
+npm start
+# or: python -m uvicorn server.main:app --host 0.0.0.0 --port 8000
+```
+
+Open **http://localhost:8000** — FastAPI serves the built React app, REST API, and WebSocket on one port.
+
+### Docker (deploy)
+
+```bash
+docker build -t bogie-flow .
+docker run --rm -p 8000:8000 -e PORT=8000 -e ALLOWED_ORIGINS=https://your-app.onrender.com bogie-flow
+```
+
+Deploy configs: [render.yaml](render.yaml), [railway.toml](railway.toml). Set `ALLOWED_ORIGINS` to your public URL; optional `GUIDE_AI_API_KEY` for Gemini guide.
+
+### Environment variables
+
+Copy [.env.example](.env.example) to `.env`. Key vars:
+
+| Variable | Purpose |
+|--------|---------|
+| `ALLOWED_ORIGINS` | CORS (comma-separated); empty defaults to localhost dev origins |
+| `GUIDE_AI_API_KEY` | Optional Gemini for corridor guide + ticket Explain |
+| `PORT` | HTTP port (default `8000`; set by Render/Railway) |
+| `VITE_API_BASE` / `VITE_WS_BASE` | Only needed for split-origin dev; leave empty for proxy/single-URL |
 
 ### Verification
 Run the backend pytest suite and frontend vitest suite:

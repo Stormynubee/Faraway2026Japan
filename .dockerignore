@@ -1,0 +1,20 @@
+# Dependencies
+node_modules
+dist
+.git
+.github
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.env
+.env.*
+!.env.example
+*.md
+docs
+tests
+assets
+.vscode
+.cursor
+
+# Keep model if pre-trained (optional — retrains on boot if missing)
+# server/agents/risk_model.joblib

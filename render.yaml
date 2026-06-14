@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: bogie-flow
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: GUIDE_AI_API_KEY
+        sync: false
+      - key: GUIDE_AI_MODEL
+        value: gemini-3.1-flash-lite

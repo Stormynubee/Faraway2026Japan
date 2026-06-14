@@ -27,6 +27,8 @@ from server.guide import ai_guide_answer
 from server.explain import explain_ticket
 from server.impact import compute_impact
 from server.simulation import SimulationEngine
+from server.static_routes import mount_static_routes
+from server.agents.risk_model import MODEL_PATH, train_and_save
 
 clients: set[WebSocket] = set()
 sim: SimulationEngine | None = None
@@ -79,6 +81,9 @@ async def simulation_loop() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global sim, tick_task
+    if not MODEL_PATH.exists():
+        logger.info("risk_model.joblib missing — training on boot")
+        await run_in_threadpool(train_and_save)
     sim = SimulationEngine(on_event=on_sim_event)
     tick_task = asyncio.create_task(simulation_loop())
     yield
@@ -201,3 +206,7 @@ async def websocket_endpoint(ws: WebSocket):
         pass
     finally:
         clients.discard(ws)
+
+
+if mount_static_routes(app):
+    logger.info("Serving production UI from dist/")
