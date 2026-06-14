@@ -1,15 +1,22 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Deploy: Dashboard → New → Blueprint → connect Stormynubee/Faraway2026Japan
+# Or: https://render.com/deploy?repo=https://github.com/Stormynubee/Faraway2026Japan
+
 services:
   - type: web
     name: bogie-flow
     runtime: docker
     plan: free
+    region: oregon
+    branch: main
+    repo: https://github.com/Stormynubee/Faraway2026Japan
     healthCheckPath: /api/health
     envVars:
       - key: PORT
         value: "8000"
       - key: ALLOWED_ORIGINS
-        sync: false
-      - key: GUIDE_AI_API_KEY
-        sync: false
+        value: https://bogieflow.vercel.app,https://faraway-2026-japan.vercel.app
       - key: GUIDE_AI_MODEL
         value: gemini-3.1-flash-lite
+      - key: GUIDE_AI_API_KEY
+        sync: false
