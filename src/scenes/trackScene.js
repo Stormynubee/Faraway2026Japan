@@ -76,24 +76,15 @@ export function createTrackScene(container, { segmentsRef, trainRef, onSegmentSe
   const markerMeshes = {}
   
   SEGMENT_IDS.forEach((id) => {
-    // Transparent glass capsule indicating active segment risk
+    // Solid capsule indicating active segment risk
     const markerGeom = new THREE.CylinderGeometry(0.3, 0.3, 0.8, 16)
     const markerMat = new THREE.MeshPhongMaterial({
       color: 0x22c55e,
-      transparent: true,
-      opacity: 0.65,
       shininess: 100,
     })
     const marker = new THREE.Mesh(markerGeom, markerMat)
     marker.position.set(segmentToX(id), 0.5, 0)
     marker.userData.segmentId = id
-    
-    // Add inner glowing rod
-    const innerGeom = new THREE.CylinderGeometry(0.08, 0.08, 0.7, 8)
-    const innerMat = new THREE.MeshBasicMaterial({ color: 0x22c55e })
-    const innerRod = new THREE.Mesh(innerGeom, innerMat)
-    innerRod.position.y = 0
-    marker.add(innerRod)
     
     trackGroup.add(marker)
     markerPickables.push(marker)
@@ -194,13 +185,7 @@ export function createTrackScene(container, { segmentsRef, trainRef, onSegmentSe
       const color = hexToColor(seg.color || '#22c55e')
       
       mesh.material.color.setHex(color)
-      mesh.material.opacity = (worst && seg.id === worst.id) ? 0.85 : 0.5
-      
-      // Update inner rod color to match
-      const innerRod = mesh.children[0]
-      if (innerRod) {
-        innerRod.material.color.setHex(color)
-      }
+      // Marker is solid Phong mesh, color indicates active risk state
       
       const isWorst = worst && seg.id === worst.id
       mesh.scale.set(1, isWorst ? 1.1 + Math.sin(Date.now() * 0.006) * 0.05 : 1, 1)

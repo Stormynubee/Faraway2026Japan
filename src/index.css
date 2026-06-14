@@ -589,13 +589,18 @@ body {
 }
 
 .segment-hud {
-  position: absolute;
-  inset: 12px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  gap: 8px;
-  pointer-events: none;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--outline-variant);
+}
+
+@media (min-width: 900px) {
+  .segment-hud {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
 
 .hud-cell {
@@ -603,22 +608,27 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px;
+  border: 1px solid var(--outline-variant);
   border-radius: var(--radius);
-  background: rgba(13, 14, 18, 0.55);
-  backdrop-filter: blur(4px);
+  background: var(--surface-container);
   cursor: pointer;
-  pointer-events: auto;
   font: inherit;
   color: inherit;
   text-align: left;
+  min-height: 72px;
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.hud-cell:hover {
+  border-color: var(--primary);
+  background: var(--surface-container-high);
 }
 
 .hud-critical {
   border-color: rgba(255, 85, 69, 0.5);
   background: rgba(255, 85, 69, 0.08);
-  box-shadow: 0 0 12px rgba(255, 59, 48, 0.25);
+  box-shadow: 0 0 12px rgba(255, 59, 48, 0.15);
 }
 
 .hud-warn-badge {

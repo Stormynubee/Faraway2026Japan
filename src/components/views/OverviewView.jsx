@@ -67,8 +67,8 @@ export default function OverviewView({
                 onSegmentClick={onSegmentClick}
               />
             </Suspense>
-            <SegmentHudGrid segments={segments} onSegmentClick={onSegmentClick} />
           </div>
+          <SegmentHudGrid segments={segments} onSegmentClick={onSegmentClick} />
 
           <div className="gauge-row">
             <MetricBar segments={segments} activeRiskIndex={activeRiskIndex} />
